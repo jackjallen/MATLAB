@@ -19,26 +19,45 @@ p.vertices=endo;
 p.faces=trifac;
 
 %% calculate mean shape
-% find average of all point clouds for ED_endo
-ED_endo = zeros(1089,3);
+
+%load the data points
+load('project1_data.mat');
+ED_endo = cell(1,400);
 tic;
 for i = 1:9
-    tmp_ED_endo = xlsread(['C:\Users\jesu2687\Documents\stacom-training-pack-clean\stacom-training-pack-clean\output-stacom-clean\output-stacom-clean\SSM000' num2str(i) '.ED.endo.vertices.csv']);
-    ED_endo = ED_endo + tmp_ED_endo;
+    ED_endo{i} = xlsread(['C:\Users\jesu2687\Documents\stacom-training-pack-clean\stacom-training-pack-clean\output-stacom-clean\output-stacom-clean\SSM000' num2str(i) '.ED.endo.vertices.csv']);
+    ES_endo{i} = xlsread(['C:\Users\jesu2687\Documents\stacom-training-pack-clean\stacom-training-pack-clean\output-stacom-clean\output-stacom-clean\SSM000' num2str(i) '.ES.endo.vertices.csv']);
+    ED_epi{i} = xlsread(['C:\Users\jesu2687\Documents\stacom-training-pack-clean\stacom-training-pack-clean\output-stacom-clean\output-stacom-clean\SSM000' num2str(i) '.ED.epi.vertices.csv']);
+    ES_epi{i} = xlsread(['C:\Users\jesu2687\Documents\stacom-training-pack-clean\stacom-training-pack-clean\output-stacom-clean\output-stacom-clean\SSM000' num2str(i) '.ES.epi.vertices.csv']);
+    
     i    
 end
-toc;
 for i = 10:99
-    tmp_ED_endo = xlsread(['C:\Users\jesu2687\Documents\stacom-training-pack-clean\stacom-training-pack-clean\output-stacom-clean\output-stacom-clean\SSM00' num2str(i) '.ED.endo.vertices.csv']);
-    ED_endo = ED_endo + tmp_ED_endo;
-    i 
+    ED_endo{i} = xlsread(['C:\Users\jesu2687\Documents\stacom-training-pack-clean\stacom-training-pack-clean\output-stacom-clean\output-stacom-clean\SSM00' num2str(i) '.ED.endo.vertices.csv']);
+    ES_endo{i} = xlsread(['C:\Users\jesu2687\Documents\stacom-training-pack-clean\stacom-training-pack-clean\output-stacom-clean\output-stacom-clean\SSM00' num2str(i) '.ES.endo.vertices.csv']);
+    ED_epi{i} = xlsread(['C:\Users\jesu2687\Documents\stacom-training-pack-clean\stacom-training-pack-clean\output-stacom-clean\output-stacom-clean\SSM00' num2str(i) '.ED.epi.vertices.csv']);
+    ES_epi{i} = xlsread(['C:\Users\jesu2687\Documents\stacom-training-pack-clean\stacom-training-pack-clean\output-stacom-clean\output-stacom-clean\SSM00' num2str(i) '.ES.epi.vertices.csv']);
+    
+    i    
 end
 for i = 100:400
-    tmp_ED_endo = xlsread(['C:\Users\jesu2687\Documents\stacom-training-pack-clean\stacom-training-pack-clean\output-stacom-clean\output-stacom-clean\SSM0' num2str(i) '.ED.endo.vertices.csv']);
-    ED_endo = ED_endo + tmp_ED_endo;
+    ED_endo{i} = xlsread(['C:\Users\jesu2687\Documents\stacom-training-pack-clean\stacom-training-pack-clean\output-stacom-clean\output-stacom-clean\SSM0' num2str(i) '.ED.endo.vertices.csv']);
+    ES_endo{i} = xlsread(['C:\Users\jesu2687\Documents\stacom-training-pack-clean\stacom-training-pack-clean\output-stacom-clean\output-stacom-clean\SSM0' num2str(i) '.ES.endo.vertices.csv']);
+    ED_epi{i} = xlsread(['C:\Users\jesu2687\Documents\stacom-training-pack-clean\stacom-training-pack-clean\output-stacom-clean\output-stacom-clean\SSM0' num2str(i) '.ED.epi.vertices.csv']);
+    ES_epi{i} = xlsread(['C:\Users\jesu2687\Documents\stacom-training-pack-clean\stacom-training-pack-clean\output-stacom-clean\output-stacom-clean\SSM0' num2str(i) '.ES.epi.vertices.csv']);
+    
     i
 end
-ED_endo_mean = ED_endo/400;
+toc;
+%findmean
+ED_endo_sum = ED_endo{1};
+tic;
+for i = 2:400
+tmp = ED_endo{1,1};
+ED_endo_sum = ED_endo_sum + tmp;
+end
+toc;
+ED_endo_mean = ED_endo_sum/400;
 %% Covariance matrix
 
 %% calculate triangle side lengths
