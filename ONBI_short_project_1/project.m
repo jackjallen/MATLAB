@@ -18,19 +18,35 @@ trifac=xlsread('C:\Users\jesu2687\Documents\stacom-training-pack-clean\stacom-tr
 p.vertices=endo;
 p.faces=trifac;
 
-%allocate matrix to store side lengths of triangles
+%% calculate mean shape
+% find average of all point clouds for ED_endo
+ED_endo = zeros(1089,3);
+tic;
+for i = 1:9
+    tmp_ED_endo = xlsread(['C:\Users\jesu2687\Documents\stacom-training-pack-clean\stacom-training-pack-clean\output-stacom-clean\output-stacom-clean\SSM000' num2str(i) '.ED.endo.vertices.csv']);
+    ED_endo = ED_endo + tmp_ED_endo;
+    i    
+end
+toc;
+for i = 10:99
+    tmp_ED_endo = xlsread(['C:\Users\jesu2687\Documents\stacom-training-pack-clean\stacom-training-pack-clean\output-stacom-clean\output-stacom-clean\SSM00' num2str(i) '.ED.endo.vertices.csv']);
+    ED_endo = ED_endo + tmp_ED_endo;
+    i 
+end
+for i = 100:400
+    tmp_ED_endo = xlsread(['C:\Users\jesu2687\Documents\stacom-training-pack-clean\stacom-training-pack-clean\output-stacom-clean\output-stacom-clean\SSM0' num2str(i) '.ED.endo.vertices.csv']);
+    ED_endo = ED_endo + tmp_ED_endo;
+    i
+end
+ED_endo_mean = ED_endo/400;
+%% Covariance matrix
 
 %% calculate triangle side lengths
-endo_sides = calcTriSides(faces, vertices);
-epi_sides = calcTriSides(faces, vertices);
-%% Area calculation (heron's forumla)
-% semiperimetre s
-s = (sides(:,1) + sides(:,2) + sides(:,3))./2;
-% list of triangle areas
-areas = sqrt(s.*(s-sides(:,1)).*(s-sides(:,2)).*(s-sides(:,3)));
-total_area = sum(areas);
-
-%% Centroids
-%coordinates of centroids
+endo_sides = calcTriSides(trifac, endo);
+epi_sides = calcTriSides(trifac, endo);
+%% calculate total areas(heron's forumla)
+endo_area = calcTriMeshArea(endo_sides);
+epi_area = calcTriMeshArea(epi_sides);
+%% calculate coordinates of the centroids
 endo_centroid = mean(endo);
 epi_centroid = mean(epi);

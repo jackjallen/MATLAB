@@ -1,10 +1,12 @@
-function [sides] = calcTriSides(faces, vertices);
-% Function to calcuate the sides of triangle using Heron's method.
+function [sides] = calcTriSides(faces, vertices)
+% Function to calcuate the sides of triangle 
 % Receives matrices 'faces' and 'vertices'.
+%   'vertices' must describe the coordinates of the vertices.
 % returns matrix 'sides' with 3 columns, one for each side of the triangle.
 % number of columns in 'sides' equals number of triangles
 
 [trifac_rows, ~] = size(faces);
+%allocate matrix to store side lengths of triangles
 sides = zeros(trifac_rows,3);
 %side a
 sides(:,1) = sqrt(...
