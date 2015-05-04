@@ -1,0 +1,671 @@
+#define   real       double
+#define   mxREAL_CLASS       mxDOUBLE_CLASS
+
+#include "myMEX.h"
+#include "MESH2vtkPolyData.h"
+#include "vtkPolyData2MESH.h"
+
+
+#ifndef _COMPILE_FILE_C
+#define REAL double
+extern "C" {
+#define   ANSI_DECLARATORS
+#include "triangle.h"
+}
+
+#else
+#define NO_TIMER
+#define ANSI_DECLARATORS
+#define TRILIBRARY
+#define REDUCED
+#define CDT_ONLY
+#undef  SELF_CHECK
+extern "C" {
+#include "./triangle_libs/triangle.c"
+}
+#undef  REDUCED
+#undef  NO_TIMER
+#undef  ANSI_DECLARATORS
+#undef  TRILIBRARY
+#undef  CDT_ONLY
+#endif
+
+
+
+#include "Impldef.h"
+#include "vtkOBBTree.h"
+#include "vtkSignedCharArray.h"
+#include "vtkGenericCell.h"
+#include "vtkPolyDataNormals.h"
+#include "vtkCellLocator.h"
+#include "vtkPolyDataReader.h"
+#include "vtkPolyDataWriter.h"
+
+
+
+#define SAFEDELETE( n )    if( n != NULL ){ n->Delete(); n=NULL; }
+#define SAFEFREE(n)        if( n != NULL ){ free( n ); n=NULL; }
+#define mxSAFEFREE(n)        if( n != NULL ){ mxFree( n ); n=NULL; }
+#define writeDATA( n )  { vtkPolyDataWriter *WRITER__=vtkPolyDataWriter::New();WRITER__->SetInput( n );WRITER__->SetFileName( #n ".vtk" );WRITER__->Write();WRITER__->Delete();WRITER__=NULL; }
+
+#define MAPSIZE 256
+
+vtkIdType *IDS;
+int func_to_sort(const void * a, const void * b ){
+   return( IDS[ *(int *)a ] - IDS[ *(int *)b ] );
+}
+vtkPolyData *sortPolyData( vtkPolyData * , const char * );
+void setSIDE( vtkPolyData * , vtkPolyData * , double * );
+void splitFACE( vtkPolyData * , vtkIdType , vtkIdType *, int );
+
+
+void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
+  ALLOCATES();
+ 
+  if(!nrhs){
+    /*
+    mexPrintf("vtkBooleanOperationPolyDataFilter( MESH1, MESH2, [CleanOut]\n");
+    mexPrintf("\n");
+    mexPrintf("Cleanout             	, boolean       	... (*) If true the output meshes contain only cell points \n");
+    mexPrintf("                                                     If false the output meshes contain all input points  \n");
+    mexPrintf("\n");*/
+    if( nlhs ){ for (int i=0; i<nlhs; i++) plhs[i]=mxCreateDoubleMatrix( 0 , 0 , mxREAL ); }
+    return;
+  }
+  
+  vtkPolyData       *A            = NULL;
+  vtkPolyData       *B            = NULL;
+  vtkPolyData       *LINES        = NULL;
+  vtkPoints         *LINESxyz     = NULL;
+  vtkCellArray      *LINESlin     = NULL;
+  vtkOBBTree        *OBB_A        = NULL;
+  vtkOBBTree        *OBB_B        = NULL;
+  vtkPointLocator   *MERGER       = NULL;
+  Implem            *INT          = NULL;
+  vtkPolyData       *LINESsorted  = NULL;
+  vtkPolyData       *AT           = NULL;
+  vtkPolyData       *BT           = NULL;
+  
+  
+  
+  A = MESH2vtkPolyData( prhs[0] );
+  B = MESH2vtkPolyData( prhs[1] );
+
+  double bA[6], bB[6], BOUNDS[6];
+  A->GetBounds(bA);
+  B->GetBounds(bB);
+  BOUNDS[0] = MIN( bA[0] , bB[0] );
+  BOUNDS[1] = MAX( bA[1] , bB[1] );
+  BOUNDS[2] = MIN( bA[2] , bB[2] );
+  BOUNDS[3] = MAX( bA[3] , bB[3] );
+  BOUNDS[4] = MIN( bA[4] , bB[4] );
+  BOUNDS[5] = MAX( bA[5] , bB[5] );
+  
+  
+  
+  LINES = vtkPolyData::New();
+
+  LINESxyz = vtkPoints::New();
+  LINESxyz->SetDataTypeToDouble();
+  LINES->SetPoints(LINESxyz);
+  
+  LINESlin = vtkCellArray::New();
+  LINES->SetLines(LINESlin);
+
+  // Find the triangle-triangle intersections between A and B
+  OBB_A = vtkOBBTree::New();
+  OBB_A->SetDataSet(A);
+  OBB_A->SetNumberOfCellsPerNode(10);
+  OBB_A->SetMaxLevel(1000000);
+  OBB_A->SetTolerance(1e-6);
+  OBB_A->AutomaticOn();
+  OBB_A->BuildLocator();
+
+  OBB_B = vtkOBBTree::New();
+  OBB_B->SetDataSet(B);
+  OBB_B->SetNumberOfCellsPerNode(10);
+  OBB_B->SetMaxLevel(1000000);
+  OBB_B->SetTolerance(1e-6);
+  OBB_B->AutomaticOn();
+  OBB_B->BuildLocator();
+
+  
+  
+  // Set up the structure for determining exact triangle-triangle
+  // intersections.
+  INT = new Implem();
+
+  INT->Mesh[0]  = A;
+  INT->Mesh[1]  = B;
+  INT->OBBTree1 = OBB_B;
+  INT->IntersectionLines = LINESlin;
+
+  // Add cell data arrays that map the intersection line to the cells
+  // it splits.
+  INT->CellIds[0] = vtkIdTypeArray::New();
+  INT->CellIds[0]->SetName("IDS_A");
+  LINES->GetCellData()->AddArray(INT->CellIds[0]);
+  INT->CellIds[0]->Delete();
+  
+  INT->CellIds[1] = vtkIdTypeArray::New();
+  INT->CellIds[1]->SetName("IDS_B");
+  LINES->GetCellData()->AddArray(INT->CellIds[1]);
+  INT->CellIds[1]->Delete();
+
+ 
+  INT->PointCellIds[0] = vtkIdTypeArray::New();
+  INT->PointCellIds[0]->SetName("PointCellsIDs");
+  INT->PointCellIds[1] = vtkIdTypeArray::New();
+  INT->PointCellIds[1]->SetName("PointCellsIDs");
+
+  MERGER = vtkPointLocator::New();
+  MERGER->SetTolerance( 1e-6 );
+  MERGER->InitPointInsertion( LINES->GetPoints() , BOUNDS );
+  INT->PointMerger = MERGER;
+
+  // This performs the triangle intersection search
+  OBB_A->IntersectWithOBBTree( OBB_B , 0 , Implem::FindTriangleIntersections , INT );
+  
+  if( INT != NULL ){
+    INT->PointCellIds[0]->Delete();
+    INT->PointCellIds[1]->Delete();
+    delete( INT );
+    INT = NULL;
+  }
+  SAFEDELETE( OBB_A   );
+  SAFEDELETE( OBB_B   );
+  SAFEDELETE( MERGER  );
+
+  
+  
+  
+  vtkIdType   *LID = NULL;
+  int nLINES = LINES->GetNumberOfCells();
+  
+  if( !nLINES ){
+    mexPrintf( "no hay intersection!!!\n" );
+    goto EXIT;
+  }
+
+  writeDATA( LINES );
+  
+  LINES->GetBounds(BOUNDS);
+  
+  if(0){ //en caso de ser abierto, usar esto
+  BOUNDS[0] = MAX( bA[0] , bB[0] );
+  BOUNDS[1] = MIN( bA[1] , bB[1] );
+  BOUNDS[2] = MAX( bA[2] , bB[2] );
+  BOUNDS[3] = MIN( bA[3] , bB[3] );
+  BOUNDS[4] = MAX( bA[4] , bB[4] );
+  BOUNDS[5] = MIN( bA[5] , bB[5] );
+  }
+
+//   double d;
+//   d = ( BOUNDS[ 1 ] - BOUNDS[ 0 ] + 1e-2 )/1000;
+//   BOUNDS[0] -= d; BOUNDS[1] += d;
+//   
+//   d = ( BOUNDS[ 3 ] - BOUNDS[ 2 ] + 1e-2 )/1000;
+//   BOUNDS[2] -= d; BOUNDS[3] += d;
+//   
+//   d = ( BOUNDS[ 5 ] - BOUNDS[ 4 ] + 1e-2 )/1000;
+//   BOUNDS[4] -= d; BOUNDS[5] += d;
+  
+  BOUNDS[0] -=  myEPS( BOUNDS[0] )*100;
+  BOUNDS[1] +=  myEPS( BOUNDS[1] )*100;
+  BOUNDS[2] -=  myEPS( BOUNDS[2] )*100;
+  BOUNDS[3] +=  myEPS( BOUNDS[3] )*100;
+  BOUNDS[4] -=  myEPS( BOUNDS[4] )*100;
+  BOUNDS[5] +=  myEPS( BOUNDS[5] )*100;
+  
+  
+
+  int         L, i;
+  vtkIdType   cellid;
+
+  
+  LID = ( vtkIdType * ) mxMalloc( sizeof( vtkIdType ) * ( 2 * nLINES + 6 ) );
+
+  //////////////SPLIT A
+  //generar AT
+  AT = vtkPolyData::New();
+  AT->DeepCopy( A );
+  for( int p = 0 ; p < LINES->GetNumberOfPoints() ; p++ ){
+    AT->GetPoints()->InsertNextPoint( LINES->GetPoint(p) );
+  }
+  AT->BuildCells();
+  
+  // Split the first output
+  LINESsorted = sortPolyData( LINES , "IDS_A" );
+  L = 0;
+  do{ 
+    i = 0;
+    cellid = LINESsorted->GetCellData()->GetArray(0)->GetComponent(L,0);
+    while( L < nLINES  && LINESsorted->GetCellData()->GetArray(0)->GetComponent(L,0) == cellid ){
+      LID[ i++ ] = LINESsorted->GetCell(L)->GetPointId(0) + A->GetNumberOfPoints();
+      LID[ i++ ] = LINESsorted->GetCell(L)->GetPointId(1) + A->GetNumberOfPoints();
+      L++; }
+    
+    LID[ i++ ] = AT->GetCell(cellid)->GetPointId(0);
+    LID[ i++ ] = AT->GetCell(cellid)->GetPointId(1);
+    LID[ i++ ] = AT->GetCell(cellid)->GetPointId(1);
+    LID[ i++ ] = AT->GetCell(cellid)->GetPointId(2);
+    LID[ i++ ] = AT->GetCell(cellid)->GetPointId(2);
+    LID[ i++ ] = AT->GetCell(cellid)->GetPointId(0);
+
+    try{
+    splitFACE( AT , cellid , LID , i );
+    }catch( ... ) {
+        mexPrintf("splitFACE dio error en cellid: %d\n", cellid );
+        goto EXIT;
+    }
+    
+  }while( L < nLINES );
+  SAFEDELETE( LINESsorted );
+  setSIDE( AT , B , BOUNDS );
+ 
+  plhs[0] = vtkPolyData2MESH( AT );
+  
+  
+
+  //////////////SPLIT B
+  BT = vtkPolyData::New();
+  BT->DeepCopy( B );
+  for( int p = 0 ; p < LINES->GetNumberOfPoints() ; p++ ){
+    BT->GetPoints()->InsertNextPoint( LINES->GetPoint(p) );
+  }
+  BT->BuildCells();
+  
+  LINESsorted = sortPolyData( LINES , "IDS_B" );
+  L = 0;
+  do{ 
+    i = 0;
+    cellid = LINESsorted->GetCellData()->GetArray(0)->GetComponent(L,0);
+    while( L < nLINES  && LINESsorted->GetCellData()->GetArray(0)->GetComponent(L,0) == cellid ){
+      LID[ i++ ] = LINESsorted->GetCell(L)->GetPointId(0) + B->GetNumberOfPoints();
+      LID[ i++ ] = LINESsorted->GetCell(L)->GetPointId(1) + B->GetNumberOfPoints();
+      L++; }
+    LID[ i++ ] = BT->GetCell(cellid)->GetPointId(0);
+    LID[ i++ ] = BT->GetCell(cellid)->GetPointId(1);
+    LID[ i++ ] = BT->GetCell(cellid)->GetPointId(1);
+    LID[ i++ ] = BT->GetCell(cellid)->GetPointId(2);
+    LID[ i++ ] = BT->GetCell(cellid)->GetPointId(2);
+    LID[ i++ ] = BT->GetCell(cellid)->GetPointId(0);
+  
+    //splitFACE( BT , cellid , LID , i );
+     try{
+    splitFACE( BT , cellid , LID , i );
+    }catch( ... ) {
+        mexPrintf("splitFACE dio error en cellid: %d\n", cellid );
+        goto EXIT;
+    }
+  }while( L < nLINES );
+  SAFEDELETE( LINESsorted );
+  setSIDE( BT , A , BOUNDS );
+ 
+  plhs[1] = vtkPolyData2MESH( BT );
+  
+
+  EXIT:
+    mxSAFEFREE(   LID         );
+    //SAFEFREE(   LID         );
+
+    if( INT != NULL ){
+      INT->PointCellIds[0]->Delete();
+      INT->PointCellIds[1]->Delete();
+      delete( INT );
+      INT = NULL;
+    }
+     
+     SAFEDELETE( AT          );
+     SAFEDELETE( BT          );
+     SAFEDELETE( LINESsorted );
+     SAFEDELETE( MERGER      );
+     SAFEDELETE( OBB_B       );
+     SAFEDELETE( OBB_A       );
+     SAFEDELETE( LINESlin    );
+     SAFEDELETE( LINESxyz    );
+     SAFEDELETE( LINES       );
+     SAFEDELETE( A           );
+     SAFEDELETE( B           );
+
+    myFreeALLOCATES();
+}
+
+
+
+
+vtkPolyData *sortPolyData( vtkPolyData *M , const char *name ){
+  
+  int             t, nM;
+  vtkPolyData     *MS;
+  vtkIdType       *indices  = NULL;
+  vtkCellArray    *FACES    = NULL;
+  vtkIdTypeArray  *ARRAY    = NULL;
+  
+  
+  MS = vtkPolyData::New();
+  MS->SetPoints( M->GetPoints() );
+
+
+  IDS = (vtkIdType *) M->GetCellData()->GetArray( name , t )->GetVoidPointer(0);
+  
+  nM = M->GetNumberOfCells();
+  
+  indices = (vtkIdType *) mxMalloc( sizeof( vtkIdType )*nM );
+  for( t = 0 ; t < nM ; t++ ){
+    indices[t] = (vtkIdType) t;
+  }
+  
+  qsort( indices , nM , sizeof(vtkIdType) , func_to_sort );
+  
+  FACES  = vtkCellArray::New();
+
+  ARRAY  = vtkIdTypeArray::New();
+  ARRAY->SetName( name ); 
+  ARRAY->SetNumberOfComponents( 1 );
+  ARRAY->SetNumberOfTuples( nM );
+
+  for( t = 0 ; t < nM ; t++ ){
+    FACES->InsertNextCell( M->GetCell( indices[t] ) );
+    ARRAY->SetComponent( t , 0 , IDS[ indices[t] ] );
+  }
+
+  MS->SetLines( FACES );
+  MS->GetCellData()->AddArray( ARRAY );
+  
+  
+  mxFree( indices );
+  FACES->Delete();
+  ARRAY->Delete();
+  
+  return( MS );
+}
+
+
+void setSIDE( vtkPolyData *A , vtkPolyData *B , double *bounds ){
+
+  vtkPolyDataNormals *NORMALS = NULL;
+  NORMALS = vtkPolyDataNormals::New();
+    NORMALS->SetInput( B );
+    NORMALS->ComputeCellNormalsOn();
+    NORMALS->ComputePointNormalsOn();
+    NORMALS->ConsistencyOff();
+    NORMALS->AutoOrientNormalsOff();
+    NORMALS->SplittingOff();
+    //NORMALS->NonManifoldTraversalOff();
+    //NORMALS->FlipNormalsOn();
+    NORMALS->Update();
+  
+    
+  vtkPolyData *SURF = vtkPolyData::New();
+  SURF->ShallowCopy( NORMALS->GetOutput() );
+    
+    
+  vtkCellLocator      *LOC = NULL;
+  LOC= vtkCellLocator::New();
+    LOC->SetDataSet( SURF );
+ 	  LOC->CacheCellBoundsOn();
+    LOC->SetNumberOfCellsPerBucket( 2 );
+    LOC->BuildLocator();
+
+  
+  
+  vtkSignedCharArray *SIDE = NULL;
+
+  SIDE = vtkSignedCharArray::New();
+  SIDE->SetName("SIDE");
+  SIDE->SetNumberOfComponents(1);
+  SIDE->SetNumberOfTuples( A->GetNumberOfCells() );
+  
+  
+  double R[3], P[3], Q[3], C[3];
+  int t, c;
+  double              closestPoint[3], distance, pcoords[3], N[3], *NN, weigths[3], side;
+  vtkGenericCell      *Gcell = vtkGenericCell::New();
+  vtkIdType           cellid;
+  int                 sub;
+  vtkIdList           *NODES = vtkIdList::New();
+
+
+  for( t = 0 ; t < A->GetNumberOfCells() ; t++ ){
+    A->GetPoint( A->GetCell(t)->GetPointId(0) , R );
+    if( R[0] < bounds[0] || R[0] > bounds[1] ||
+        R[1] < bounds[2] || R[1] > bounds[3] ||
+        R[2] < bounds[4] || R[2] > bounds[5] ){ SIDE->SetComponent(t,0,0); continue; }
+          
+    A->GetPoint( A->GetCell(t)->GetPointId(1) , P );
+    if( P[0] < bounds[0] || P[0] > bounds[1] ||
+        P[1] < bounds[2] || P[1] > bounds[3] ||
+        P[2] < bounds[4] || P[2] > bounds[5] ){ SIDE->SetComponent(t,0,0); continue; }
+    
+    A->GetPoint( A->GetCell(t)->GetPointId(2) , Q );
+    if( Q[0] < bounds[0] || Q[0] > bounds[1] ||
+        Q[1] < bounds[2] || Q[1] > bounds[3] ||
+        Q[2] < bounds[4] || Q[2] > bounds[5] ){ SIDE->SetComponent(t,0,0); continue; }
+    
+    for( c = 0 ; c < 3 ; c++ ){
+      C[c] = ( R[c] + P[c] + Q[c] )/3.0;
+    }
+    
+    LOC->FindClosestPoint( C , closestPoint , Gcell , cellid , sub , distance );
+    
+    SURF->GetCell( cellid )->EvaluatePosition( closestPoint, NULL, sub, pcoords, distance, weigths );
+
+//     if( weigths[0]<1e-3 || weigths[1]<1e-3 || weigths[2]<1e-3 ){
+    
+      SURF->GetCellPoints( cellid , NODES );
+      
+      NN = SURF->GetPointData()->GetNormals()->GetTuple3( NODES->GetId(0) );
+      for( c=0 ; c<3; c++ ){  N[c]  = NN[c]*weigths[0];  }
+      NN = SURF->GetPointData()->GetNormals()->GetTuple3( NODES->GetId(1) );
+      for( c=0 ; c<3; c++ ){  N[c] += NN[c]*weigths[1];  }
+      NN = SURF->GetPointData()->GetNormals()->GetTuple3( NODES->GetId(2) );
+      for( c=0 ; c<3; c++ ){  N[c] += NN[c]*weigths[2];  }
+
+//     } else {
+//       
+//       NN = SURF->GetCellData()->GetNormals()->GetTuple3(cellid);
+//       N[0] = NN[0];
+//       N[1] = NN[1];
+//       N[2] = NN[2];
+//       
+//     }
+
+    side= 0;
+    for( c=0; c<3; c++ ){ side += (closestPoint[c]-C[c])*N[c]; }
+    
+    
+    if( side > 0 ){
+      SIDE->SetComponent( t , 0 , 1 );
+    } else {
+      SIDE->SetComponent( t , 0 , -1 );
+    }
+    
+  }
+  A->GetCellData()->AddArray( SIDE );
+  
+  SAFEDELETE( NODES   );
+  SAFEDELETE( SIDE    );
+  SAFEDELETE( Gcell   );
+  SAFEDELETE( LOC     );
+  SAFEDELETE( SURF    );
+  SAFEDELETE( NORMALS );
+}
+
+
+
+
+
+
+
+void splitFACE( vtkPolyData *M , vtkIdType cellid , vtkIdType *LID , int I ){
+  struct triangulateio Tin;
+//   Tin.pointlist                    = ( REAL * ) NULL;
+//   Tin.pointattributelist           = ( REAL * ) NULL;
+//   Tin.pointmarkerlist              = ( int  * ) NULL;
+//   Tin.trianglelist                 = ( int  * ) NULL;
+//   Tin.triangleattributelist        = ( REAL * ) NULL;
+//   Tin.trianglearealist             = ( REAL * ) NULL;
+//   Tin.neighborlist                 = ( int  * ) NULL;
+//   Tin.segmentlist                  = ( int  * ) NULL;
+//   Tin.segmentmarkerlist            = ( int  * ) NULL;
+//   Tin.holelist                     = ( REAL * ) NULL;
+//   Tin.regionlist                   = ( REAL * ) NULL;
+//   Tin.edgelist                     = ( int  * ) NULL;
+//   Tin.edgemarkerlist               = ( int  * ) NULL;
+//   Tin.normlist                     = ( REAL * ) NULL;
+//   Tin.numberofpoints               = 0;
+//   Tin.numberofpointattributes      = 0;
+//   Tin.numberoftriangles            = 0;
+//   Tin.numberofcorners              = 0;
+//   Tin.numberoftriangleattributes   = 0;
+//   Tin.numberofsegments             = 0;
+//   Tin.numberofholes                = 0;
+//   Tin.numberofregions              = 0;
+//   Tin.numberofedges                = 0;
+  struct triangulateio Tout;
+  
+  memset( &Tin  , (int) 0 , sizeof( struct triangulateio ) );
+  memset( &Tout , (int) 0 , sizeof( struct triangulateio ) );
+
+  
+  int    i,j;
+  
+  Tin.numberofpoints   = I;
+  Tin.pointlist        = (REAL *) malloc( 2 * Tin.numberofpoints * sizeof(REAL) );
+  Tin.pointmarkerlist  = (int  *) malloc(     Tin.numberofpoints * sizeof(int ) );
+  for( i = 0 ; i < Tin.numberofpoints ; i++ ){ Tin.pointmarkerlist[i] = 0; }
+
+  Tin.numberofsegments  = I/2;
+  Tin.segmentlist       = (int *) malloc( 2 * Tin.numberofsegments * sizeof(int) );
+  Tin.segmentmarkerlist = (int *) malloc(     Tin.numberofsegments * sizeof(int) );
+  for( i = 0 ; i < Tin.numberofsegments ; i++ ){ Tin.segmentmarkerlist[i] = 0; }  
+  
+  double XYZ[3];
+  double R[3], P[3], Q[3], nP, nQ;
+  
+  M->GetPoint( M->GetCell(cellid)->GetPointId(0) , R );
+  M->GetPoint( M->GetCell(cellid)->GetPointId(1) , P );
+  M->GetPoint( M->GetCell(cellid)->GetPointId(2) , Q );
+
+  P[0] -= R[0];
+  P[1] -= R[1];
+  P[2] -= R[2];
+//   nP = 1.0/sqrt( P[0]*P[0] + P[1]*P[1] + P[2]*P[2] );
+//   P[0] *= nP;
+//   P[1] *= nP;
+//   P[2] *= nP;
+
+  Q[0] -= R[0];
+  Q[1] -= R[1];
+  Q[2] -= R[2];
+//   nQ = 1.0/sqrt( Q[0]*Q[0] + Q[1]*Q[1] + Q[2]*Q[2] );
+//   Q[0] *= nQ;
+//   Q[1] *= nQ;
+//   Q[2] *= nQ;
+  
+  double A[3], B[3];
+  
+  A[0] =  P[0]*Q[1]*Q[1] + P[0]*Q[2]*Q[2] - Q[0]*P[1]*Q[1] - Q[0]*P[2]*Q[2];
+  A[1] =  P[1]*Q[0]*Q[0] + P[1]*Q[2]*Q[2] - Q[1]*P[0]*Q[0] - Q[1]*P[2]*Q[2];
+  A[2] =  P[2]*Q[0]*Q[0] + P[2]*Q[1]*Q[1] - Q[2]*P[0]*Q[0] - Q[2]*P[1]*Q[1];
+  
+  B[0] = -P[0]*P[1]*Q[1] - P[0]*P[2]*Q[2] + Q[0]*P[1]*P[1] + Q[0]*P[2]*P[2];
+  B[1] =  P[1]*P[0]*Q[0] - P[1]*P[2]*Q[2] + Q[1]*P[0]*P[0] + Q[1]*P[2]*P[2];
+  B[2] =  P[2]*P[0]*Q[0] - P[2]*P[1]*Q[1] + Q[2]*P[0]*P[0] + Q[2]*P[1]*P[1];
+  
+  for( i = 0 ; i < I ; i++ ){
+    M->GetPoint( LID[i] , XYZ );
+    XYZ[0] -= R[0];
+    XYZ[1] -= R[1];
+    XYZ[2] -= R[2];
+//     Tin.pointlist[ 2*i     ] = XYZ[0]*P[0] + XYZ[1]*P[1] + XYZ[2]*P[2];
+//     Tin.pointlist[ 2*i + 1 ] = XYZ[0]*Q[0] + XYZ[1]*Q[1] + XYZ[2]*Q[2];
+    Tin.pointlist[ 2*i     ] = XYZ[0]*A[0] + XYZ[1]*A[1] + XYZ[2]*A[2];
+    Tin.pointlist[ 2*i + 1 ] = XYZ[0]*B[0] + XYZ[1]*B[1] + XYZ[2]*B[2];
+    Tin.segmentlist[ i     ] = i;
+  }
+  
+//   mexPrintf( "cellid = %d\n", cellid ); myFlush();
+//   mexPrintf("\n");
+//   for( i = 0 ; i < I ; i++ ){
+//     mexPrintf("p: %d    %0.20g   %0.20g\n", i+1 , Tin.pointlist[2*i], Tin.pointlist[2*i+1] );
+//   }
+//   for( i = 0 ; i < I/2 ; i++ ){
+//     mexPrintf("s:  %d  %d   %d\n", i+1 , Tin.segmentlist[2*i]+1, Tin.segmentlist[2*i+1]+1 );
+//   }
+//   mexPrintf("\n");
+  /*mexPrintf("triangulate dio error en cellid: %d\n", cellid );
+  myFlush();*/
+  try {
+      //goto FREEandEXIT;
+    triangulate( "zQ" , &Tin , &Tout , (struct triangulateio *) NULL );
+  } catch( int k ) { 
+    mexPrintf("triangulate dio error en cellid: %d", cellid );
+    goto FREEandEXIT;
+  } catch( ... ) { 
+    mexPrintf("triangulate dio error en cellid: %d", cellid );
+    goto FREEandEXIT;
+  }
+  #define mapea( x )    x
+//   double dist, d;
+//   int    map[MAPSIZE];
+//   for( i = 0 ; i < Tin.numberofpoints ; i++ ){ map[i] = i; }
+//   for( ; i < Tout.numberofpoints ; i++ ){
+//     dist = 1e300;
+//     for( j = 0 ; j < Tin.numberofpoints ; j++ ){
+//       d = ( Tin.pointlist[ 2*j   ] - Tout.pointlist[ 2*i   ] )*( Tin.pointlist[ 2*j   ] - Tout.pointlist[ 2*i   ] ) +
+//           ( Tin.pointlist[ 2*j+1 ] - Tout.pointlist[ 2*i+1 ] )*( Tin.pointlist[ 2*j+1 ] - Tout.pointlist[ 2*i+1 ] );
+//       if( d < dist ){ map[i]=j; dist = d; }
+//       if( dist < 1e-12 ){ break; } 
+//     }  
+//   }  
+//   #define mapea( x ) map[ x ]
+  
+  
+  vtkIdType T[3];
+  
+  for( j = 0 ; j < 3 ; j++ ){ T[j] = LID[ mapea( Tout.trianglelist[j] ) ]; }
+  M->ReplaceCell( cellid , 3 , T );
+  for( i = 1 ; i < Tout.numberoftriangles ; i++ ) {
+    for( j = 0 ; j < 3 ; j++ ){ T[j] = LID[ mapea( Tout.trianglelist[i*3+j] ) ]; }
+    M->InsertNextCell( VTK_TRIANGLE , 3 , T );
+  }  
+  
+  FREEandEXIT:
+    
+  SAFEFREE( Tout.pointlist               );
+  SAFEFREE( Tout.pointattributelist      );
+  SAFEFREE( Tout.pointmarkerlist         );
+  SAFEFREE( Tout.trianglelist            );
+  SAFEFREE( Tout.triangleattributelist   );
+  SAFEFREE( Tout.trianglearealist        );
+  SAFEFREE( Tout.neighborlist            );
+  SAFEFREE( Tout.segmentlist             );
+  SAFEFREE( Tout.segmentmarkerlist       );
+  SAFEFREE( Tout.holelist                );
+  SAFEFREE( Tout.regionlist              );
+  SAFEFREE( Tout.edgelist                );
+  SAFEFREE( Tout.edgemarkerlist          );
+  SAFEFREE( Tout.normlist                );
+
+  SAFEFREE(  Tin.pointlist               );
+  SAFEFREE(  Tin.pointattributelist      );
+  SAFEFREE(  Tin.pointmarkerlist         );
+  SAFEFREE(  Tin.trianglelist            );
+  SAFEFREE(  Tin.triangleattributelist   );
+  SAFEFREE(  Tin.trianglearealist        );
+  SAFEFREE(  Tin.neighborlist            );
+  SAFEFREE(  Tin.segmentlist             );
+  SAFEFREE(  Tin.segmentmarkerlist       );
+  SAFEFREE(  Tin.holelist                );
+  SAFEFREE(  Tin.regionlist              );
+  SAFEFREE(  Tin.edgelist                );
+  SAFEFREE(  Tin.edgemarkerlist          );
+  SAFEFREE(  Tin.normlist                );    
+  
+}
+
+
+
+

@@ -1,0 +1,27 @@
+vtkButterflySubdivisionFilter
+
+vtkLinearSubdivisionFilter
+
+vtkImplicitModeller
+
+vtkSelectVisiblePoints
+
+vtkPolyDataSilhouette
+
+vtkOutlineCornerFilter
+
+vtkDecimatePolylineFilter
+
+vtkCurvatures
+
+
+vtkLinearExtrusionFilter 
+
+vtkRotationalExtrusionFilter
+
+vtkRuledSurfaceFilter 
+
+vtkDijkstraGraphGeodesicPath                   http://www2.imm.dtu.dk/~rrp/VTK/
+
+
+

@@ -1,0 +1,140 @@
+#include "mex.h"
+#include "myMEX.h"
+
+#define   real       double
+#define   mxREAL_CLASS       mxDOUBLE_CLASS
+
+#define vtkOBJ_TYPE      vtkCleanPolyData
+#include "vtkCleanPolyData.h"
+#include "MESH2vtkPolyData.h"
+#include "vtkPolyData2MESH.h"
+
+void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
+  int                 argN;
+  double              v, *xyz;
+  char                STR[2000], method[2000];
+
+  if(!nrhs){
+    mexPrintf("vtkCleanPolyData( MESH ...\n");
+    mexPrintf("\n");
+    mexPrintf("SetTolerance             , real       ... Specify tolerance in terms of fraction of bounding box length\n");
+    mexPrintf("SetAbsoluteTolerance     , real(1e-10)... Specify tolerance in absolute terms\n");
+    mexPrintf("\n");
+    mexPrintf("SetToleranceIsAbsolute   , logical    ... if false Tolerance is a fraction of Bounding box diagonal, if true, AbsoluteTolerance is used when adding points to locator (merging)\n");
+    mexPrintf("ToleranceIsAbsoluteOn    , [] (*)     ...\n");
+    mexPrintf("ToleranceIsAbsoluteOff   , []         ...\n");
+    mexPrintf("\n");
+    mexPrintf("SetConvertLinesToPoints  , logical    ... Turn on/off conversion of degenerate lines to points\n");
+    mexPrintf("ConvertLinesToPointsOn   , [] (*)     ...\n");
+    mexPrintf("ConvertLinesToPointsOff  , []         ...\n");
+    mexPrintf("\n");
+    mexPrintf("SetConvertPolysToLines   , logical    ... Turn on/off conversion of degenerate polys to lines\n");
+    mexPrintf("ConvertPolysToLinesOn    , [] (*)     ...\n");
+    mexPrintf("ConvertPolysToLinesOff   , []         ...\n");
+    mexPrintf("\n");
+    mexPrintf("SetConvertStripsToPolys  , logical    ... Turn on/off conversion of degenerate strips to polys\n");
+    mexPrintf("ConvertStripsToPolysOn   , [] (*)     ...\n");
+    mexPrintf("ConvertStripsToPolysOff  , []         ...\n");
+    mexPrintf("\n");
+    mexPrintf("SetPointMerging          , logical    ... Set a boolean value that controls whether point merging is performed. If on, a locator will be used, and points laying within the appropriate tolerance may be merged. If off, points are never merged. By default, merging is on.\n");
+    mexPrintf("PointMergingOn           , [] (*)     ...\n");
+    mexPrintf("PointMergingOff          , []         ...\n");
+    mexPrintf("\n");
+    mexPrintf("SetPieceInvariant        , logical    ... no help\n");
+    mexPrintf("PieceInvariantOn         , []         ...\n");
+    mexPrintf("PieceInvariantOff        , []         ...\n");
+    mexPrintf("\n");
+    if( nlhs ){ plhs[0]= mxCreateDoubleMatrix( 0 , 0 , mxREAL ); }
+    return;
+  }
+  
+  ALLOCATES();
+  vtkPolyData         *MESH;
+  vtkOBJ_TYPE         *CLEAN;
+
+  MESH = MESH2vtkPolyData( prhs[0] );
+  
+  CLEAN = vtkOBJ_TYPE::New();
+  CLEAN->SetInput( MESH );
+  
+  /*Defaults*/
+  CLEAN->ToleranceIsAbsoluteOn();
+  CLEAN->SetAbsoluteTolerance(1e-10);
+  CLEAN->ConvertLinesToPointsOn();
+  CLEAN->ConvertPolysToLinesOn();
+  CLEAN->ConvertStripsToPolysOn();
+  CLEAN->PointMergingOn();
+  /*END Defaults*/
+  
+  /*Parsing arguments*/
+  argN = 1;
+  while( nrhs > argN ) {
+    if( !mxIsChar( prhs[argN] ) || !mxGetNumberOfElements( prhs[argN] ) ){
+    /*   myErrMsgTxt( "No keywords." ); */
+    }
+    mxGetString( prhs[argN], method, 1999 );
+    
+    argN++;
+    if( argN == nrhs || mxGetNumberOfElements( prhs[argN] ) == 0){
+      CallMethod( CLEAN , method );
+    } else if( mxIsChar(prhs[argN]) ) {
+      mxGetString( prhs[argN], STR, 1999 );
+      CallMethod( CLEAN , method , STR );
+    } else if( mxGetNumberOfElements( prhs[argN] ) == 1 )  {
+      v = myGetValue( prhs[argN] );
+      CallMethod( CLEAN , method , v );
+    } else {
+      xyz = myGetPr( prhs[argN] );
+      CallMethod( CLEAN , method , xyz );
+    }
+    argN++;
+
+  }
+  /*END Parsing arguments*/
+  
+
+  CLEAN->Update();  
+  plhs[0]= vtkPolyData2MESH( CLEAN->GetOutput() );
+
+  EXIT:
+    CLEAN->Delete();
+    MESH->Delete();
+    myFreeALLOCATES();
+}
+
+void CallMethod( vtkOBJ_TYPE *O , char *met ){
+  Call_0( ToleranceIsAbsoluteOn    );
+  Call_0( ToleranceIsAbsoluteOff   );
+  Call_0( ConvertLinesToPointsOn   );
+  Call_0( ConvertLinesToPointsOff  );
+  Call_0( ConvertPolysToLinesOn    );
+  Call_0( ConvertPolysToLinesOff   );
+  Call_0( ConvertStripsToPolysOn   );
+  Call_0( ConvertStripsToPolysOff  );
+  Call_0( PointMergingOn           );
+  Call_0( PointMergingOff          );
+  Call_0( PieceInvariantOn         );
+  Call_0( PieceInvariantOff        );
+  mexWarnMsgTxt("Invalid Method: "); mexPrintf(" %s\n", met ); myFlush();
+}
+
+void CallMethod( vtkOBJ_TYPE *O , char *met , real v ){
+  Call_1( SetToleranceIsAbsolute   , v );
+  Call_1( SetTolerance             , v );
+  Call_1( SetAbsoluteTolerance     , v );
+  Call_1( SetConvertLinesToPoints  , v );
+  Call_1( SetConvertPolysToLines   , v );
+  Call_1( SetConvertStripsToPolys  , v );
+  Call_1( SetPointMerging          , v );
+  Call_1( SetPieceInvariant        , v );
+  mexWarnMsgTxt("Invalid Method: "); mexPrintf(" %s\n", met ); myFlush();
+}
+
+void CallMethod( vtkOBJ_TYPE *O , char *met , char *v ){
+//   Call_1( SetFileName              , v );
+  mexWarnMsgTxt("Invalid Method: "); mexPrintf(" %s\n", met ); myFlush(); 
+}
+void CallMethod( vtkOBJ_TYPE *O , char *met , real *v ){
+//   Call_1( SetFileName              , v );
+  mexWarnMsgTxt("Invalid Method: "); mexPrintf(" %s\n", met ); myFlush(); 
+}

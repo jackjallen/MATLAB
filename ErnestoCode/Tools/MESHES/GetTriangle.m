@@ -1,0 +1,6 @@
+function t= GetTriangle( mesh , e )
+
+t= [ mesh.xyz( mesh.tri(e,1),: ) ; ...
+     mesh.xyz( mesh.tri(e,2),: ) ; ...
+     mesh.xyz( mesh.tri(e,3),: ) ];
+
