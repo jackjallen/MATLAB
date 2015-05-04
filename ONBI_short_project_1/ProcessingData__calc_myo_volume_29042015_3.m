@@ -10,10 +10,10 @@ cd C:\Users\jesu2687\Documents\MATLAB\ErnestoCode\
 for i = 1:400
 
     i
-transformed_data(i).diastolic.endo.xyz = reshape(transformed_data(i).diastolic.endo.xyz, size(data(i).diastolic.endo.xyz));
-transformed_data(i).diastolic.epi.xyz = reshape(transformed_data(i).diastolic.epi.xyz, size(data(i).diastolic.epi.xyz));
-transformed_data(i).systolic.endo.xyz = reshape(transformed_data(i).systolic.endo.xyz, size(data(i).systolic.endo.xyz));
-transformed_data(i).systolic.epi.xyz = reshape(transformed_data(i).systolic.epi.xyz, size(data(i).systolic.epi.xyz));
+% transformed_data(i).diastolic.endo.xyz = reshape(transformed_data(i).diastolic.endo.xyz, size(data(i).diastolic.endo.xyz));
+% transformed_data(i).diastolic.epi.xyz = reshape(transformed_data(i).diastolic.epi.xyz, size(data(i).diastolic.epi.xyz));
+% transformed_data(i).systolic.endo.xyz = reshape(transformed_data(i).systolic.endo.xyz, size(data(i).systolic.endo.xyz));
+% transformed_data(i).systolic.epi.xyz = reshape(transformed_data(i).systolic.epi.xyz, size(data(i).systolic.epi.xyz));
 
 transformed_data(i).diastolic.endo.B = vtkFeatureEdges( vtkCleanPolyData(transformed_data(i).diastolic.endo) , 'BoundaryEdgesOn' , [] , 'FeatureEdgesOff' , [] );  %extracting the boundary
 transformed_data(i).diastolic.endo.B.xyz = transformed_data(i).diastolic.endo.B.xyz( [2 1 3:end], : );  %fixing the connectivity.

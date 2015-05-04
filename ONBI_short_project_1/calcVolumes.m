@@ -13,11 +13,11 @@ function [sys_epi_volumes, sys_endo_volumes, dia_epi_volumes, dia_endo_volumes, 
 % edges
 for i = 1:400 
 %calculate the hole edge line coordinates xyz B for all patients
-%diastolic, endo
-data(i).diastolic.endo.xyz = reshape(data(i).diastolic.endo.xyz, [1089, 3] );
-data(i).diastolic.epi.xyz = reshape(data(i).diastolic.epi.xyz, [1089, 3] );
-data(i).systolic.endo.xyz = reshape(data(i).systolic.endo.xyz, [1089, 3] );
-data(i).systolic.epi.xyz = reshape(data(i).systolic.epi.xyz, [1089, 3] );
+% %diastolic, endo
+% data(i).diastolic.endo.xyz = reshape(data(i).diastolic.endo.xyz, [1089, 3] );
+% data(i).diastolic.epi.xyz = reshape(data(i).diastolic.epi.xyz, [1089, 3] );
+% data(i).systolic.endo.xyz = reshape(data(i).systolic.endo.xyz, [1089, 3] );
+% data(i).systolic.epi.xyz = reshape(data(i).systolic.epi.xyz, [1089, 3] );
 
 data(i).diastolic.endo.B = vtkFeatureEdges( vtkCleanPolyData(data(i).diastolic.endo) , 'BoundaryEdgesOn' , [] , 'FeatureEdgesOff' , [] );  %extracting the boundary
 data(i).diastolic.endo.B.xyz = data(i).diastolic.endo.B.xyz( [2 1 3:end], : );  %fixing the connectivity.

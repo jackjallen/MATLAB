@@ -4,13 +4,13 @@ close all
 %%
 %VG
 %pat1_endo=xlsread('F:\Images\STACOM\stacom-training-pack-clean\output-stacom-clean\SSM0001.ED.endo.vertices.csv');
-pat1_endo=xlsread('C:\Users\jesu2687\Documents\stacom-training-pack-clean\stacom-training-pack-clean\output-stacom-clean\output-stacom-clean\SSM0001.ED.endo.vertices.csv');
+pat1_endo=xlsread('C:\Users\jesu2687\Documents\stacom-training-pack-clean\stacom-training-pack-clean\output-stacom-clean\output-stacom-clean\SSM0002.ED.endo.vertices.csv');
 figure
 plot3(pat1_endo(:,1),pat1_endo(:,2),pat1_endo(:,3),'o')
 axis equal; axis tight;
 %VG
 %pat1_epi=xlsread('F:\Images\STACOM\stacom-training-pack-clean\output-stacom-clean\SSM0001.ED.epi.vertices.csv');
-pat1_epi=xlsread('C:\Users\jesu2687\Documents\stacom-training-pack-clean\stacom-training-pack-clean\output-stacom-clean\output-stacom-clean\SSM0001.ED.epi.vertices.csv');
+pat1_epi=xlsread('C:\Users\jesu2687\Documents\stacom-training-pack-clean\stacom-training-pack-clean\output-stacom-clean\output-stacom-clean\SSM0002.ED.epi.vertices.csv');
 hold on
 plot3(pat1_epi(:,1),pat1_epi(:,2),pat1_epi(:,3),'or')
 %VG
@@ -23,7 +23,9 @@ axis equal; axis tight;
 patch(p,'EdgeColor','g','FaceColor','red');
 lighting gouraud
 camlight headlight
-
+hold on
+patch('vertices', pat1_epi, 'faces', p.faces,'edgecolor','k','facecolor','g')
+patch('vertices', pat1_endo, 'faces', p.faces,'edgecolor','k','facecolor','b')
 %% JA
 % 20/04/15 triangle areas
 % area = 0.5 * base *height

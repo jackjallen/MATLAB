@@ -6,6 +6,7 @@ clear all
 close all
 clc
 
+<<<<<<< HEAD
 setenv('path',[getenv('path'),';','C:\Users\jesu2687\Documents\MATLAB\ErnestoCode\Tools\MESHES\vtk_libs']);
 addpath('C:\Users\jesu2687\Documents\MATLAB\ONBI_short_project_1')
 addpath C:\Users\jesu2687\Documents\MATLAB\ErnestoCode\Tools\MESHES\
@@ -18,6 +19,24 @@ load('C:\Users\jesu2687\Documents\MATLAB\ONBI_short_project_1\labels.mat');
 %each case belongs to.
 % (DETERMINE = mycardium has been infarcted)
 % (MESA = asymptomatic)
+=======
+% setenv('path',[getenv('path'),';','C:\Users\jesu2687\Documents\MATLAB\ErnestoCode\Tools\MESHaES\vtk_libs']);
+% addpath('C:\Users\jesu2687\Documents\MATLAB\ONBI_short_project_1')
+% addpath C:\Users\jesu2687\Documents\MATLAB\ErnestoCode\Tools\MESHES\
+% addpath C:\Users\jesu2687\Documents\MATLAB\ErnestoCode\Tools
+% addpath C:\Users\jesu2687\Documents\MATLAB\ErnestoCode\
+% 
+setenv('path',[getenv('path'),';','D:\ErnestoCode\Tools\MESHES\vtk_libs']);
+addpath('C:\Users\jack laptop\Documents\MATLAB\ONBI_DTC\short_project_1')
+addpath ('C:\Users\jack laptop\Documents\MATLAB\ONBI_DTC\short_project_1\ErnestoCode\Tools\MESHES\');
+addpath ('C:\Users\jack laptop\Documents\MATLAB\ONBI_DTC\short_project_1\ErnestoCode\Tools');
+addpath ('C:\Users\jack laptop\Documents\MATLAB\ONBI_DTC\short_project_1\ErnestoCode');
+% read data (adapted from VG code)
+%load('C:\Users\jesu2687\Documents\MATLAB\ONBI_short_project_1\project1_data.mat');
+load('C:\Users\jack laptop\Documents\MATLAB\ONBI_DTC\short_project_1\project1_data.mat');
+load('C:\Users\jack laptop\Documents\MATLAB\ONBI_DTC\short_project_1\labels.mat');
+
+>>>>>>> 5ebf88f09de8911523cf4d9c2ee06a809999e990
 DETERMINE_indices = Labels(2:101,3);
 MESA_indices = Labels(102:201,3);
 
@@ -204,7 +223,16 @@ for i = 400
 end
 
 disp('finish calculating endo and epi volumes')
+<<<<<<< HEAD
 %% plot volume histograms
+=======
+%% Myocardium volumes
+disp('started calculating myocardium volumes')
+% for i = 1:400 %all patients
+load('myoB.mat')
+
+
+>>>>>>> 5ebf88f09de8911523cf4d9c2ee06a809999e990
 
 
 
@@ -245,9 +273,31 @@ data(i).systolic.full.B.xyz = data(i).systolic.full.B.xyz( [2 1 3:end], : );  %f
 data(i).diastolic.full.B.xyz = data(i).diastolic.full.xyz( vtkClosestPoint( data(i).diastolic.full , data(i).diastolic.full.B.xyz ) , : );
 data(i).systolic.full.B.xyz = data(i).systolic.full.xyz( vtkClosestPoint( data(i).systolic.full , data(i).systolic.full.B.xyz ) , : );
 
+<<<<<<< HEAD
 %join the list of coordinates for endo and epi to be used to make myo lid
 data(i).diastolic.myo.B.xyz = [data(i).diastolic.endo.B.xyz ; data(i).diastolic.epi.B.xyz]; 
 data(i).systolic.myo.B.xyz = [data(i).systolic.endo.B.xyz ; data(i).systolic.epi.B.xyz]; 
+=======
+% plot3(data(i).diastolic.endo.B.xyz(:,1), data(i).diastolic.endo.B.xyz(:,2), data(i).diastolic.endo.B.xyz(:,3))
+
+%load a struct containing a manually produced myoB.tri
+% load('C:\Users\jesu2687\Documents\MATLAB\ONBI_short_project_1\myoB_tri.mat')
+
+%join the list of coordinates for endo and epi to be used to cover the myo.
+%diastolic
+data(i).diastolic.myoB.xyz = [data(i).diastolic.endo.B.xyz ; data(i).diastolic.epi.B.xyz];
+data(i).systolic.myoB.xyz = [data(i).systolic.endo.B.xyz ; data(i).systolic.epi.B.xyz];
+
+%append epi surface, endo surface and myo lid
+data(i).diastolic.myoB_full.xyz = [ data(i).diastolic.endo.xyz ; data(i).diastolic.myoB.xyz ; data(i).diastolic.epi.xyz ];
+data(i).diastolic.myoB_full.tri = [ data(i).diastolic.endo.tri; myoB.tri + size( data(1).diastolic.endo.xyz , 1 ) ; data(i).diastolic.epi.tri + size( data(1).diastolic.endo.xyz , 1 ) + size(data(i).diastolic.myoB.xyz,1) ];
+data(i).systolic.myoB_full.xyz = [ data(i).systolic.endo.xyz ; data(i).systolic.myoB.xyz ; data(i).systolic.epi.xyz ];
+data(i).systolic.myoB_full.tri = [ data(i).systolic.endo.tri; myoB.tri + size( data(1).systolic.endo.xyz , 1 ) ; data(i).systolic.epi.tri + size( data(1).systolic.endo.xyz , 1 ) + size(data(i).systolic.myoB.xyz,1) ];
+
+%make sure that every triangle points outwards.
+data(i).diastolic.myoB_full = FixNormals(data(i).diastolic.myoB_full );
+data(i).systolic.myoB_full = FixNormals(data(i).systolic.myoB_full );
+>>>>>>> 5ebf88f09de8911523cf4d9c2ee06a809999e990
 
 %Make fully closed myocardium volume by appending epi surface, endo
 %surface and myo lid.
@@ -261,8 +311,13 @@ data(i).diastolic.myo = FixNormals(data(i).diastolic.myo );
 data(i).systolic.myo = FixNormals(data(i).systolic.myo );
 
 %calculate volume of myocardium.
+<<<<<<< HEAD
 [data(i).diastolic.myoVolume, data(i).diastolic.myoCenterOfMass] = MeshVolume( data(i).diastolic.myo );
 [data(i).systolic.myoVolume, data(i).systolic.myoCenterOfMass] = MeshVolume( data(i).systolic.myo );
+=======
+[data(i).diastolic.myoVolume, data(i).diastolic.myoCenterOfMass] = MeshVolume( data(i).diastolic.myoB_full );
+[data(i).systolic.myoVolume, data(i).systolic.myoCenterOfMass] = MeshVolume( data(i).systolic.myoB_full );
+>>>>>>> 5ebf88f09de8911523cf4d9c2ee06a809999e990
 
 % %Compare myo volume with epi volume.
 % %transformed_data(i).diastolic.myodifference_volume = prod(diff( BBMesh( transformed_data(i).diastolic.myoB_full ) , 1  , 1 ) ) - transformed_data(i).diastolic.myoVolume ;   %%it shoud be positive!!
@@ -271,7 +326,10 @@ data(i).systolic.myo = FixNormals(data(i).systolic.myo );
 
 end
 
+<<<<<<< HEAD
 disp('finished calculating myocardium volumes')
+=======
+>>>>>>> 5ebf88f09de8911523cf4d9c2ee06a809999e990
 %% store volumes
 DETERMINE_indices = sort(DETERMINE_indices);
 for i = DETERMINE_indices(1,1):DETERMINE_indices(100,1)
@@ -285,12 +343,31 @@ MESA_systolic_myovolumes(i,1) = data(i).systolic.myoVolume;
 end
 
 figure
+<<<<<<< HEAD
 hold on
 nbins = 100;
 histogram(DETERMINE_systolic_myovolumes,nbins)
 histogram(MESA_systolic_myovolumes,nbins)
 legend 'DETERMINE' 'MESA'
 title 'systolic myocardium volumes'
+=======
+hold on
+nbins = 100;
+histogram(DETERMINE_systolic_myovolumes,nbins)
+histogram(MESA_systolic_myovolumes,nbins)
+legend 'DETERMINE' 'MESA'
+title 'systolic myocardium volumes'
+xlabel 'volume'
+ylabel 'frequency'
+
+figure
+hold on
+nbins = 100;
+histogram(DETERMINE_diastolic_myovolumes,nbins)
+histogram(MESA_diastolic_myovolumes,nbins)
+legend ' DETERMINE ' ' MESA '
+title 'diastolic myocardium volumes'
+>>>>>>> 5ebf88f09de8911523cf4d9c2ee06a809999e990
 xlabel 'volume'
 ylabel 'frequency'
 
