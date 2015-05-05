@@ -203,11 +203,69 @@ for i = 400
     data(1).systolic.epi.volume = sys_epi_volumes(i,1);
 end
 
+%store volumes
+DETERMINE_indices = sort(DETERMINE_indices);
+for i = DETERMINE_indices(1,1):DETERMINE_indices(100,1)
+DETERMINE_diastolic_endoVolumes(i,1) = dia_endo_volumes(i,1);
+DETERMINE_systolic_endoVolumes(i,1) = sys_endo_volumes(i,1);
+DETERMINE_diastolic_epiVolumes(i,1) = dia_endo_volumes(i,1);
+DETERMINE_systolic_epiVolumes(i,1) = sys_endo_volumes(i,1);
+end
+MESA_indices = sort(MESA_indices);
+for i = MESA_indices(1,1):MESA_indices(100,1)
+MESA_diastolic_endoVolumes(i,1) = dia_endo_volumes(i,1);
+MESA_systolic_endoVolumes(i,1) = sys_endo_volumes(i,1);
+MESA_diastolic_endoVolumes(i,1) = dia_endo_volumes(i,1);
+MESA_systolic_endoVolumes(i,1) = sys_endo_volumes(i,1);
+end
+
 disp('finish calculating endo and epi volumes')
-%% plot volume histograms
+%% plot volume histograms - comparing DETERMINE with MESA
 
+%diastolic endocardium volumes
+figure
+hold on
+nbins = 100;
+histogram(DETERMINE_diastolic_endoVolumes,nbins)
+histogram(MESA_diastolic_endoVolumes,nbins)
+legend 'DETERMINE' ' MESA'
+title 'diastolic endocardium volumes'
+xlabel 'volume'
+ylabel 'frequency'
 
+%systolic endocardium volumes
+figure
+hold on
+nbins = 100;
+histogram(DETERMINE_systolic_endoVolumes,nbins)
+histogram(MESA_systolic_endoVolumes,nbins)
+legend 'DETERMINE' ' MESA'
+title 'systolic endocardium volumes'
+xlabel 'volume'
+ylabel 'frequency'
 
+%calculate endocardium ejection fractions EF
+% SV = diastolic volume - systolic volume
+% EF = (SV/(diastolic volume))*100
+DETERMINE_SV = DETERMINE_diastolic_endoVolumes(:,1) - DETERMINE_systolic_endoVolumes(:,1);
+for i = 1:size(DETERMINE_diastolic_endoVolumes(:,1),1)
+    DETERMINE_EF(i,1) = (DETERMINE_SV(i,1)/DETERMINE_diastolic_endoVolumes(i,1))*100;
+end
+MESA_SV = MESA_diastolic_endoVolumes(:,1) - MESA_systolic_endoVolumes(:,1);
+for i = 1:size(MESA_diastolic_endoVolumes(:,1),1)
+    MESA_EF(i,1) = (MESA_SV(i,1)/MESA_diastolic_endoVolumes(i,1))*100;
+end
+
+%plot ejection fraction 
+figure
+hold on
+nbins = 100;
+histogram(DETERMINE_EF)
+histogram(MESA_EF)
+legend 'DETERMINE' ' MESA'
+title 'Ejection fractions'
+xlabel 'Ejection fraction'
+ylabel 'frequency'
 
 %% Myocardium volumes
 disp('calculating myocardium volumes')
@@ -285,6 +343,7 @@ MESA_diastolic_myovolumes(i,1) = data(i).diastolic.myoVolume;
 MESA_systolic_myovolumes(i,1) = data(i).systolic.myoVolume;
 end
 
+%plot systolic myocardium volumes
 figure
 hold on
 nbins = 100;
@@ -295,6 +354,7 @@ title 'systolic myocardium volumes'
 xlabel 'volume'
 ylabel 'frequency'
 
+%plot diastolic myocardium volumes
 figure
 hold on
 nbins = 100;
@@ -305,6 +365,28 @@ title 'diastolic myocardium volumes'
 xlabel 'volume'
 ylabel 'frequency'
 
+%calculate "myocardium ejection fraction" myoEF
+% SV = diastolic volume - systolic volume
+% EF = (SV/(diastolic volume))*100
+DETERMINE_myoSV = DETERMINE_diastolic_myovolumes(:,1) - DETERMINE_systolic_myovolumes(:,1);
+for i = 1:size(DETERMINE_diastolic_myovolumes(:,1),1)
+    DETERMINE_myoEF(i,1) = (DETERMINE_myoSV(i,1)/DETERMINE_diastolic_myovolumes(i,1))*100;
+end
+MESA_myoSV = MESA_diastolic_myovolumes(:,1) - MESA_systolic_myovolumes(:,1);
+for i = 1:size(MESA_diastolic_myovolumes(:,1),1)
+    MESA_myoEF(i,1) = (MESA_myoSV(i,1)/MESA_diastolic_myovolumes(i,1))*100;
+end
+
+%plot myocardium ejection fractions
+figure;
+hold on
+nbins = 50;
+histogram(DETERMINE_myoEF,nbins)
+histogram(MESA_myoEF,nbins)
+legend 'DETERMINE' ' MESA'
+title 'ejection fractions calculated from myocardium volumes'
+xlabel 'Ejection fraction (%)'
+ylabel 'frequency'
 %% myocardium visualisation
 close all
 %visualise the endo and epi edge points (labelled), with all the other points from
