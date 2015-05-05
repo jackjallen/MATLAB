@@ -21,6 +21,7 @@ load('C:\Users\jesu2687\Documents\MATLAB\ONBI_short_project_1\labels.mat');
 DETERMINE_indices = Labels(2:101,3);
 MESA_indices = Labels(102:201,3);
 
+
 %% Procrustes analysis
 % This is done by concatenating the endo and epi shape vectors to produce
 % longer vectors (myo.xyz). Procrustes analysis is then performed on the
@@ -184,88 +185,113 @@ title 'patient i, whole LV, systolic'
 %% make lid for myocardium
 % disp('make lid for myocardium')
 %% endo and epi volumes
-disp('start calculating endo and epi volumes')
+disp('calculating endo and epi volumes')
 %!!!!!!!!!!!!SPLIT calcVolumes INTO MULTIPLE FUNCTIONS!!!!!!!!!!!
 %[transformed_data.systolic.epi.tri, transformed_data.systolic.endo.tri, transformed_data.diastolic.epi.tri, transformed_data.diastolic.endo.tri ] = addLid(transformed_data);
 
 % [sys_epi_volumes, sys_endo_volumes, dia_epi_volumes, dia_endo_volumes] = calcVolumes(transformed_data);
 [sys_epi_volumes, sys_endo_volumes, dia_epi_volumes, dia_endo_volumes] = calcVolumes(data);
 %store volumes
-for i = 400
-    data(1).diastolic.endo.volume = dia_endo_volumes(i,1);
-    data(1).diastolic.epi.volume = dia_epi_volumes(i,1);
-    data(1).systolic.endo.volume = sys_endo_volumes(i,1);
-    data(1).systolic.epi.volume = sys_epi_volumes(i,1);
+for i = 1:400
+    data(i).diastolic.endo.volume = dia_endo_volumes(i,1);
+    data(i).diastolic.epi.volume = dia_epi_volumes(i,1);
+    data(i).systolic.endo.volume = sys_endo_volumes(i,1);
+    data(i).systolic.epi.volume = sys_epi_volumes(i,1);
     
-    data(1).diastolic.endo.volume = dia_endo_volumes(i,1);
-    data(1).diastolic.epi.volume = dia_epi_volumes(i,1);
-    data(1).systolic.endo.volume = sys_endo_volumes(i,1);
-    data(1).systolic.epi.volume = sys_epi_volumes(i,1);
+%     data(i).diastolic.endo.volume = dia_endo_volumes(i,1);
+%     data(i).diastolic.epi.volume = dia_epi_volumes(i,1);
+%     data(i).systolic.endo.volume = sys_endo_volumes(i,1);
+%     data(i).systolic.epi.volume = sys_epi_volumes(i,1);
 end
 
 %store volumes
-DETERMINE_indices = sort(DETERMINE_indices);
-for i = DETERMINE_indices(1,1):DETERMINE_indices(100,1)
-DETERMINE_diastolic_endoVolumes(i,1) = dia_endo_volumes(i,1);
-DETERMINE_systolic_endoVolumes(i,1) = sys_endo_volumes(i,1);
-DETERMINE_diastolic_epiVolumes(i,1) = dia_endo_volumes(i,1);
-DETERMINE_systolic_epiVolumes(i,1) = sys_endo_volumes(i,1);
+% DETERMINE_indices = sort(DETERMINE_indices);
+for i = DETERMINE_indices 
+    for d = find(DETERMINE_indices==i)
+    DETERMINE_diastolic_endoVolumes(d,1) = dia_endo_volumes(i,1);
+    DETERMINE_systolic_endoVolumes(d,1) = sys_endo_volumes(i,1);
+    DETERMINE_diastolic_epiVolumes(d,1) = dia_epi_volumes(i,1);
+    DETERMINE_systolic_epiVolumes(d,1) = sys_epi_volumes(i,1);
+    end
 end
-MESA_indices = sort(MESA_indices);
-for i = MESA_indices(1,1):MESA_indices(100,1)
-MESA_diastolic_endoVolumes(i,1) = dia_endo_volumes(i,1);
-MESA_systolic_endoVolumes(i,1) = sys_endo_volumes(i,1);
-MESA_diastolic_endoVolumes(i,1) = dia_endo_volumes(i,1);
-MESA_systolic_endoVolumes(i,1) = sys_endo_volumes(i,1);
+% MESA_indices = sort(MESA_indices);
+for i = MESA_indices
+    for m = find(MESA_indices==i)
+        i
+        m
+    MESA_diastolic_endoVolumes(m,1) = dia_endo_volumes(i,1);
+    MESA_systolic_endoVolumes(m,1) = sys_endo_volumes(i,1);
+    MESA_diastolic_epiVolumes(m,1) = dia_epi_volumes(i,1);
+    MESA_systolic_epiVolumes(m,1) = sys_epi_volumes(i,1);
+    end
 end
 
 disp('finish calculating endo and epi volumes')
 %% plot volume histograms - comparing DETERMINE with MESA
-
+% 1mm^3 = 0.001ml
 %diastolic endocardium volumes
 figure
 hold on
-nbins = 100;
-histogram(DETERMINE_diastolic_endoVolumes,nbins)
-histogram(MESA_diastolic_endoVolumes,nbins)
+nbins = 25;
+histogram((DETERMINE_diastolic_endoVolumes*0.001),nbins)
+histogram(MESA_diastolic_endoVolumes*0.001,nbins)
 legend 'DETERMINE' ' MESA'
 title 'diastolic endocardium volumes'
-xlabel 'volume'
+xlabel 'endocardium volume (ml)'
 ylabel 'frequency'
+print('compare diastolic endocardium volumes','-dpng')
 
-%systolic endocardium volumes
+% systolic endocardium volumes
 figure
 hold on
-nbins = 100;
-histogram(DETERMINE_systolic_endoVolumes,nbins)
-histogram(MESA_systolic_endoVolumes,nbins)
+nbins = 25;
+histogram(DETERMINE_systolic_endoVolumes*0.001,nbins)
+histogram(MESA_systolic_endoVolumes*0.001,nbins)
 legend 'DETERMINE' ' MESA'
 title 'systolic endocardium volumes'
-xlabel 'volume'
+xlabel 'endocardium volume (ml)'
 ylabel 'frequency'
+print('compare systolic endocardium volumes','-dpng')
 
 %calculate endocardium ejection fractions EF
 % SV = diastolic volume - systolic volume
 % EF = (SV/(diastolic volume))*100
-DETERMINE_SV = DETERMINE_diastolic_endoVolumes(:,1) - DETERMINE_systolic_endoVolumes(:,1);
-for i = 1:size(DETERMINE_diastolic_endoVolumes(:,1),1)
-    DETERMINE_EF(i,1) = (DETERMINE_SV(i,1)/DETERMINE_diastolic_endoVolumes(i,1))*100;
+for i = DETERMINE_indices 
+    for d = find(DETERMINE_indices==i)
+DETERMINE_SV(d,1) = DETERMINE_diastolic_endoVolumes(d,1) - DETERMINE_systolic_endoVolumes(d,1);
+DETERMINE_EF(d,1) = (DETERMINE_SV(d,1)./DETERMINE_diastolic_endoVolumes(d,1))*100;
+    end
 end
-MESA_SV = MESA_diastolic_endoVolumes(:,1) - MESA_systolic_endoVolumes(:,1);
-for i = 1:size(MESA_diastolic_endoVolumes(:,1),1)
-    MESA_EF(i,1) = (MESA_SV(i,1)/MESA_diastolic_endoVolumes(i,1))*100;
+for i = MESA_indices 
+    for d = find(MESA_indices==i)
+MESA_SV(d,1) = MESA_diastolic_endoVolumes(d,1) - MESA_systolic_endoVolumes(d,1);
+MESA_EF(d,1) = (MESA_SV(d,1)./MESA_diastolic_endoVolumes(d,1))*100;
+    end
 end
 
 %plot ejection fraction 
 figure
 hold on
-nbins = 100;
-histogram(DETERMINE_EF)
-histogram(MESA_EF)
-legend 'DETERMINE' ' MESA'
+nbins =30;
+histogram(DETERMINE_EF, nbins)
+histogram(MESA_EF, nbins)
+legend 'DETERMINE' 'MESA'
 title 'Ejection fractions'
-xlabel 'Ejection fraction'
+xlabel 'Ejection fraction (%)'
 ylabel 'frequency'
+print('compare ejection fractions','-dpng')
+
+%plot stroke volume (SV)
+figure
+hold on
+nbins =30;
+histogram(DETERMINE_SV*0.001, nbins)
+histogram(MESA_SV*0.001, nbins)
+legend 'DETERMINE' 'MESA'
+title 'Stroke volumes'
+xlabel 'Stroke volume (ml)'
+ylabel 'frequency'
+print('compare stroke volumes','-dpng')
 
 %% Myocardium volumes
 disp('calculating myocardium volumes')
@@ -332,61 +358,81 @@ end
 
 disp('finished calculating myocardium volumes')
 %% store volumes
-DETERMINE_indices = sort(DETERMINE_indices);
-for i = DETERMINE_indices(1,1):DETERMINE_indices(100,1)
-DETERMINE_diastolic_myovolumes(i,1) = data(i).diastolic.myoVolume;
-DETERMINE_systolic_myovolumes(i,1) = data(i).systolic.myoVolume;
+for i = 1:400
+     dia_myovolumes(i) = data(i).diastolic.myoVolume;
+     sys_myovolumes(i) = data(i).systolic.myoVolume;
 end
-MESA_indices = sort(MESA_indices);
-for i = MESA_indices(1,1):MESA_indices(100,1)
-MESA_diastolic_myovolumes(i,1) = data(i).diastolic.myoVolume;
-MESA_systolic_myovolumes(i,1) = data(i).systolic.myoVolume;
+for i = DETERMINE_indices 
+    for d = find(DETERMINE_indices==i)
+    DETERMINE_diastolic_myovolumes(d,1) = dia_myovolumes(i);
+    DETERMINE_systolic_myovolumes(d,1) =  sys_myovolumes(i);
+    end
 end
 
-%plot systolic myocardium volumes
+for i = MESA_indices 
+    for m = find(MESA_indices==i)
+    MESA_diastolic_myovolumes(m,1) = dia_myovolumes(i);
+    MESA_systolic_myovolumes(m,1) = sys_myovolumes(i);
+    end
+end
+
+% plot systolic myocardium volumes
 figure
 hold on
-nbins = 100;
+nbins = 25;
 histogram(DETERMINE_systolic_myovolumes,nbins)
 histogram(MESA_systolic_myovolumes,nbins)
 legend 'DETERMINE' 'MESA'
 title 'systolic myocardium volumes'
-xlabel 'volume'
+xlabel 'myocardium volume (mm^3)'
 ylabel 'frequency'
+print('compare systolic myocardium volumes','-dpng')
 
-%plot diastolic myocardium volumes
+% plot diastolic myocardium volumes
 figure
 hold on
-nbins = 100;
+nbins = 25;
 histogram(DETERMINE_diastolic_myovolumes,nbins)
 histogram(MESA_diastolic_myovolumes,nbins)
 legend ' DETERMINE ' ' MESA '
 title 'diastolic myocardium volumes'
-xlabel 'volume'
+xlabel 'myocardium volume (mm^3)'
 ylabel 'frequency'
+print('compare diastolic myocardium volumes','-dpng')
 
 %calculate "myocardium ejection fraction" myoEF
-% SV = diastolic volume - systolic volume
-% EF = (SV/(diastolic volume))*100
-DETERMINE_myoSV = DETERMINE_diastolic_myovolumes(:,1) - DETERMINE_systolic_myovolumes(:,1);
-for i = 1:size(DETERMINE_diastolic_myovolumes(:,1),1)
+% myoSV = diastolic myovolume - systolic myovolume
+% myoEF = (myoSV/(diastolic volume))*100
+for i = 1:100
+    DETERMINE_myoSV(i,1) = DETERMINE_diastolic_myovolumes(i,1) - DETERMINE_systolic_myovolumes(i,1);
     DETERMINE_myoEF(i,1) = (DETERMINE_myoSV(i,1)/DETERMINE_diastolic_myovolumes(i,1))*100;
-end
-MESA_myoSV = MESA_diastolic_myovolumes(:,1) - MESA_systolic_myovolumes(:,1);
-for i = 1:size(MESA_diastolic_myovolumes(:,1),1)
+    MESA_myoSV(i,1) = MESA_diastolic_myovolumes(i,1) - MESA_systolic_myovolumes(i,1);
     MESA_myoEF(i,1) = (MESA_myoSV(i,1)/MESA_diastolic_myovolumes(i,1))*100;
 end
 
 %plot myocardium ejection fractions
 figure;
 hold on
-nbins = 50;
+nbins = 25;
+histogram(DETERMINE_myoSV,nbins)
+histogram(MESA_myoSV,nbins)
+legend 'DETERMINE' ' MESA'
+title 'stroke volumes calculated using myocardium volumes'
+xlabel ' "Stroke volume" mm^3 '
+ylabel 'frequency'
+print('compare stroke volumes calculated from myocardium volumes','-dpng')
+
+%plot myocardium ejection fractions
+figure;
+hold on
+nbins = 25;
 histogram(DETERMINE_myoEF,nbins)
 histogram(MESA_myoEF,nbins)
 legend 'DETERMINE' ' MESA'
-title 'ejection fractions calculated from myocardium volumes'
-xlabel 'Ejection fraction (%)'
+title 'ejection fractions calculated using myocardium volumes'
+xlabel '"Ejection fraction" (%)'
 ylabel 'frequency'
+print('compare ejection fractions calculated from myocardium volumes','-dpng')
 %% myocardium visualisation
 close all
 %visualise the endo and epi edge points (labelled), with all the other points from
@@ -443,7 +489,7 @@ disp('start shape modeling')
 %****should I find covariance of x, y and z seperately?...************
 
 %find the positions of the greatest eigenvalues
-[rows, cols] = find((dia_endo_eigenvalues)/max(max(dia_endo_eigenvalues))>=(1))
+[rows, cols] = find((dia_endo_eigenvalues)/max(max(dia_endo_eigenvalues))>=(1));
 %select eigenvectors with greatest eigenvalues
 dia_endo_eigenvectors(:,1:(cols(1,1)-1)) = 0;
 
@@ -451,7 +497,7 @@ dia_endo_eigenvectors_sum = zeros(size(dia_endo_eigenvectors,2),1);
 for i = size(dia_endo_eigenvectors,2)
     dia_endo_eigenvectors_sum = dia_endo_eigenvectors(:,i) + dia_endo_eigenvectors_sum ;
 end
-dia_endo_new_shape = dia_endo_mean_shape + dia_endo_eigenvectors_sum;
+dia_endo_new_shape = dia_endo_mean_shape + dia_endo_eigenvectors_sum.*;
 
 %ICA
 %[icaOut] = fastica(dia_endo_covariance_matrix)
@@ -508,14 +554,204 @@ end
 
 %% calculate triangle side lengths
 %!!!!! NEED TO CORRECT THIS TO INCLUDE THE LIDS
-endo_sides = calcTriSides(trifac, endo);
-epi_sides = calcTriSides(trifac, endo);
+
+for i = 1:400 
+    for d = find(MESA_indices==i)
+       
+       MESA_dia_endo_sides = calcTriSides(data(i).diastolic.endo.tri, data(i).diastolic.endo.xyz); 
+       MESA_dia_endo_areas(d,1) = calcTriMeshArea(MESA_dia_endo_sides);
+          
+       MESA_dia_epi_sides = calcTriSides(data(i).diastolic.epi.tri, data(i).diastolic.epi.xyz);
+       MESA_dia_epi_areas(d,1) = calcTriMeshArea(MESA_dia_epi_sides);
+       
+       MESA_sys_endo_sides = calcTriSides(data(i).systolic.endo.tri, data(i).systolic.endo.xyz);
+       MESA_sys_endo_areas(d,1) = calcTriMeshArea(MESA_sys_endo_sides);
+       
+       MESA_sys_epi_sides = calcTriSides(data(i).systolic.epi.tri, data(i).systolic.epi.xyz);
+       MESA_sys_epi_areas(d,1) = calcTriMeshArea(MESA_sys_epi_sides);
+       
+       MESA_dia_myo_sides = calcTriSides(data(i).diastolic.myo.tri, data(i).diastolic.myo.xyz);
+       MESA_dia_myo_areas(d,1) = calcTriMeshArea(MESA_dia_myo_sides);
+       
+       MESA_sys_myo_sides = calcTriSides(data(i).systolic.myo.tri, data(i).systolic.myo.xyz);
+       MESA_sys_myo_areas(d,1) = calcTriMeshArea(MESA_sys_myo_sides);
+    end
+end
+
+for i = 1:400
+    for d = find(DETERMINE_indices==i)
+       DETERMINE_dia_endo_sides = calcTriSides(data(i).diastolic.endo.tri, data(i).diastolic.endo.xyz); 
+       DETERMINE_dia_endo_areas(d,1) = calcTriMeshArea(DETERMINE_dia_endo_sides);
+          
+       DETERMINE_dia_epi_sides = calcTriSides(data(i).diastolic.epi.tri, data(i).diastolic.epi.xyz);
+       DETERMINE_dia_epi_areas(d,1) = calcTriMeshArea(DETERMINE_dia_epi_sides);
+       
+       DETERMINE_sys_endo_sides = calcTriSides(data(i).systolic.endo.tri, data(i).systolic.endo.xyz);
+       DETERMINE_sys_endo_areas(d,1) = calcTriMeshArea(DETERMINE_sys_endo_sides);
+       
+       DETERMINE_sys_epi_sides = calcTriSides(data(i).systolic.epi.tri, data(i).systolic.epi.xyz);
+       DETERMINE_sys_epi_areas(d,1) = calcTriMeshArea(DETERMINE_sys_epi_sides);
+       
+       DETERMINE_dia_myo_sides = calcTriSides(data(i).diastolic.myo.tri, data(i).diastolic.myo.xyz);
+       DETERMINE_dia_myo_areas(d,1) = calcTriMeshArea(DETERMINE_dia_myo_sides);
+       
+       DETERMINE_sys_myo_sides = calcTriSides(data(i).systolic.myo.tri, data(i).systolic.myo.xyz);
+       DETERMINE_sys_myo_areas(d,1) = calcTriMeshArea(DETERMINE_sys_myo_sides);
+    end
+end
+
+%% plot surface areas
+figure;
+hold on
+nbins = 25;
+histogram(DETERMINE_dia_endo_areas,nbins)
+histogram(MESA_dia_endo_areas,nbins)
+legend 'DETERMINE' ' MESA'
+title 'diastolic endocardium surface areas'
+xlabel 'surface areas (mm^2)'
+ylabel 'frequency'
+print('compare diastolic endocardium surface areas','-dpng')
+
+figure;
+hold on
+nbins = 25;
+histogram(DETERMINE_dia_epi_areas,nbins)
+histogram(MESA_dia_epi_areas,nbins)
+legend 'DETERMINE' ' MESA'
+title 'diastolic epicardium surface areas'
+xlabel 'surface areas (mm^2)'
+ylabel 'frequency'
+print('compare diastolic epicardium surface areas','-dpng')
+
+figure;
+hold on
+nbins = 25;
+histogram(DETERMINE_sys_endo_areas,nbins)
+histogram(MESA_sys_endo_areas,nbins)
+legend 'DETERMINE' ' MESA'
+title 'systolic endocardium surface areas'
+xlabel 'surface areas (mm^2)'
+ylabel 'frequency'
+print('compare systolic endocardium surface areas','-dpng')
+
+
+figure;
+hold on
+nbins = 25;
+histogram(DETERMINE_sys_epi_areas,nbins)
+histogram(MESA_sys_epi_areas,nbins)
+legend 'DETERMINE' ' MESA'
+title 'systolic epicardium surface areas'
+xlabel 'surface areas (mm^2)'
+ylabel 'frequency'
+print('compare systolic epicardium surface areas','-dpng')
+
+figure;
+hold on
+nbins = 25;
+histogram(DETERMINE_dia_myo_areas,nbins)
+histogram(MESA_dia_myo_areas,nbins)
+legend 'DETERMINE' ' MESA'
+title 'diastolic myocardium surface areas'
+xlabel 'surface areas (mm^2)'
+ylabel 'frequency'
+print('compare diastolic myocardium surface areas','-dpng')
+
+figure;
+hold on
+nbins = 25;
+histogram(DETERMINE_sys_myo_areas,nbins)
+histogram(MESA_sys_myo_areas,nbins)
+legend 'DETERMINE' ' MESA'
+title 'systolic myocardium surface areas'
+xlabel 'surface areas (mm^2)'
+ylabel 'frequency'
+print('compare systolic myocardium surface areas','-dpng')
+
+%% calculate surface area to volume ratios
+for i =1:100
+    DETERMINE_dia_endo_AVratio(i,1) = DETERMINE_dia_endo_areas(i,1)/DETERMINE_diastolic_endoVolumes(i,1);
+    DETERMINE_dia_epi_AVratio(i,1) = DETERMINE_dia_epi_areas(i,1)/DETERMINE_diastolic_epiVolumes(i,1);
+    DETERMINE_sys_endo_AVratio(i,1) = DETERMINE_sys_endo_areas(i,1)/DETERMINE_systolic_endoVolumes(i,1);
+    DETERMINE_sys_epi_AVratio(i,1) = DETERMINE_sys_epi_areas(i,1)/DETERMINE_systolic_epiVolumes(i,1);
+    
+    MESA_dia_endo_AVratio(i,1) = MESA_dia_endo_areas(i,1)/MESA_diastolic_endoVolumes(i,1);
+    MESA_dia_epi_AVratio(i,1) = MESA_dia_epi_areas(i,1)/MESA_diastolic_epiVolumes(i,1);
+    MESA_sys_endo_AVratio(i,1) = MESA_sys_endo_areas(i,1)/MESA_systolic_endoVolumes(i,1);
+    MESA_sys_epi_AVratio(i,1) = MESA_sys_epi_areas(i,1)/MESA_systolic_epiVolumes(i,1);
+    
+    MESA_dia_myo_AVratio(i,1) = MESA_dia_myo_areas(i,1)/MESA_diastolic_myovolumes(i,1);
+    MESA_sys_myo_AVratio(i,1) = MESA_sys_myo_areas(i,1)/MESA_systolic_myovolumes(i,1);
+    
+    DETERMINE_dia_myo_AVratio(i,1) = DETERMINE_dia_myo_areas(i,1)/DETERMINE_diastolic_myovolumes(i,1);
+    DETERMINE_sys_myo_AVratio(i,1) = DETERMINE_sys_myo_areas(i,1)/DETERMINE_systolic_myovolumes(i,1);
+    
+    
+end
+
+figure;
+hold on
+nbins = 25;
+histogram(DETERMINE_dia_endo_AVratio,nbins)
+histogram(MESA_dia_endo_AVratio,nbins)
+legend 'DETERMINE' ' MESA'
+title 'diastolic endocardium surface area to volume ratio'
+xlabel 'area/volume (mm^-1)'
+ylabel 'frequency'
+print('compare diastolic endocardium surface areas to volume ratios','-dpng')
+
+figure;
+hold on
+nbins = 25;
+histogram(DETERMINE_sys_epi_AVratio,nbins)
+histogram(MESA_sys_epi_AVratio,nbins)
+legend 'DETERMINE' ' MESA'
+title 'systolic endocardium surface area to volume ratio'
+xlabel 'area/volume (mm^-1)'
+ylabel 'frequency'
+print('compare systolic endocardium surface area to volume ratios','-dpng')
+
+figure;
+hold on
+nbins = 25;
+histogram(DETERMINE_sys_endo_AVratio,nbins)
+histogram(MESA_sys_endo_AVratio,nbins)
+legend 'DETERMINE' ' MESA'
+title 'systolic endocardium surface area to volume ratio'
+xlabel 'area/volume (mm^-1)'
+ylabel 'frequency'
+print('compare systolic endocardium surface area to volume ratios','-dpng')
+
+figure;
+hold on
+nbins = 25;
+histogram(DETERMINE_sys_epi_AVratio,nbins)
+histogram(MESA_sys_epi_AVratio,nbins)
+legend 'DETERMINE' ' MESA'
+title 'systolic epicardium surface area to volume ratio'
+xlabel 'area/volume (mm^-1)'
+ylabel 'frequency'
+print('compare systolic epicardium surface area to volume ratios','-dpng')
+
+figure;
+hold on
+nbins = 25;
+histogram(DETERMINE_dia_myo_AVratio,nbins)
+histogram(MESA_dia_myo_AVratio,nbins)
+legend 'DETERMINE' ' MESA'
+title 'diastolic myocardium surface area to volume ratio'
+xlabel 'area/volume (mm^-1)'
+ylabel 'frequency'
+print('compare diastolic myocardium surface areas to volume ratios','-dpng')
+
+
+
 %% calculate total areas(heron's forumla)
 %!!!!! NEED TO CORRECT THIS TO INCLUDE THE LIDS
-endo_area = calcTriMeshArea(endo_sides);
-epi_area = calcTriMeshArea(epi_sides);
-%% calculate coordinates of the centroids
-%!!!!! NEED TO CORRECT THIS...ALREADY DONE BY 'calcVolume'?
-endo_centroid = mean(endo);
-epi_centroid = mean(epi);
-
+% endo_area = calcTriMeshArea(endo_sides);
+% epi_area = calcTriMeshArea(epi_sides);
+% %% calculate coordinates of the centroids
+% %!!!!! NEED TO CORRECT THIS...ALREADY DONE BY 'calcVolume'?
+% endo_centroid = mean(endo);
+% epi_centroid = mean(epi);
+% 
