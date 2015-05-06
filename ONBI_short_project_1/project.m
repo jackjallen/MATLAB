@@ -190,7 +190,7 @@ disp('calculating endo and epi volumes')
 %[transformed_data.systolic.epi.tri, transformed_data.systolic.endo.tri, transformed_data.diastolic.epi.tri, transformed_data.diastolic.endo.tri ] = addLid(transformed_data);
 
 % [sys_epi_volumes, sys_endo_volumes, dia_epi_volumes, dia_endo_volumes] = calcVolumes(transformed_data);
-[sys_epi_volumes, sys_endo_volumes, dia_epi_volumes, dia_endo_volumes] = calcVolumes(data);
+[sys_epi_volumes, sys_endo_volumes, dia_epi_volumes, dia_endo_volumes,] = calcVolumes(data);
 %store volumes
 for i = 1:400
     data(i).diastolic.endo.volume = dia_endo_volumes(i,1);
@@ -257,6 +257,7 @@ print('compare systolic endocardium volumes','-dpng')
 % SV = diastolic volume - systolic volume
 % EF = (SV/(diastolic volume))*100
 for i = DETERMINE_indices 
+    i
     for d = find(DETERMINE_indices==i)
 DETERMINE_SV(d,1) = DETERMINE_diastolic_endoVolumes(d,1) - DETERMINE_systolic_endoVolumes(d,1);
 DETERMINE_EF(d,1) = (DETERMINE_SV(d,1)./DETERMINE_diastolic_endoVolumes(d,1))*100;
@@ -264,10 +265,47 @@ DETERMINE_EF(d,1) = (DETERMINE_SV(d,1)./DETERMINE_diastolic_endoVolumes(d,1))*10
 end
 for i = MESA_indices 
     for d = find(MESA_indices==i)
+        
 MESA_SV(d,1) = MESA_diastolic_endoVolumes(d,1) - MESA_systolic_endoVolumes(d,1);
 MESA_EF(d,1) = (MESA_SV(d,1)./MESA_diastolic_endoVolumes(d,1))*100;
     end
 end
+
+
+for i = 1:100
+% if we class over threshold as MESA ('negative') and under threshold as
+% DETERMINE ('positive')
+positive = DETERMINE_EF;
+negative = MESA_EF;
+false_negative(i) = sum(positive>i);
+true_negative(i) = sum(negative>i);
+true_positive(i) = sum(positive<i);
+false_positive(i) = sum(negative<i);
+%fraction, not percentage
+accuracy(i) = (true_positive + true_negative)/(true_positive + false_positive + false_negative + true_negative);
+
+sensitivity(i) = true_positive(i)/(true_positive(i)+false_negative(i));
+specificity(i) = true_negative(i)/(true_negative(i)+false_positive(i));
+end
+
+figure
+plot(specificity, sensitivity)
+title 'ejection fraction (EF) ROC'
+xlabel ' specificity'
+ylabel ' sensitivity'
+
+%accuracy versus threshold
+figure
+plot(accuracy);
+%find threshold that gives greatest accuracy
+threshold = find(accuracy == max(accuracy));
+hold on
+plot([threshold threshold],[0.48 0.66], 'g')
+plot([0 100],[max(accuracy)  max(accuracy)], 'g')
+trial = 55;
+plot([trial trial],[0.48 0.66], 'r')
+ylabel 'accuracy'
+xlabel 'ejection fraction threshold %'
 
 %plot ejection fraction 
 figure
@@ -275,11 +313,13 @@ hold on
 nbins =30;
 histogram(DETERMINE_EF, nbins)
 histogram(MESA_EF, nbins)
-legend 'DETERMINE' 'MESA'
 title 'Ejection fractions'
 xlabel 'Ejection fraction (%)'
 ylabel 'frequency'
-print('compare ejection fractions','-dpng')
+hold on
+% print('compare ejection fractions','-dpng')
+plot([threshold threshold],[0 15], 'g')
+legend 'DETERMINE' 'MESA' 'Threshold'
 
 %plot stroke volume (SV)
 figure
@@ -380,11 +420,11 @@ end
 figure
 hold on
 nbins = 25;
-histogram(DETERMINE_systolic_myovolumes,nbins)
-histogram(MESA_systolic_myovolumes,nbins)
+histogram(DETERMINE_systolic_myovolumes*0.001,nbins)
+histogram(MESA_systolic_myovolumes*0.001,nbins)
 legend 'DETERMINE' 'MESA'
 title 'systolic myocardium volumes'
-xlabel 'myocardium volume (mm^3)'
+xlabel 'myocardium volume (ml)'
 ylabel 'frequency'
 print('compare systolic myocardium volumes','-dpng')
 
@@ -392,11 +432,11 @@ print('compare systolic myocardium volumes','-dpng')
 figure
 hold on
 nbins = 25;
-histogram(DETERMINE_diastolic_myovolumes,nbins)
-histogram(MESA_diastolic_myovolumes,nbins)
+histogram(DETERMINE_diastolic_myovolumes*0.001,nbins)
+histogram(MESA_diastolic_myovolumes*0.001,nbins)
 legend ' DETERMINE ' ' MESA '
 title 'diastolic myocardium volumes'
-xlabel 'myocardium volume (mm^3)'
+xlabel 'myocardium volume (ml)'
 ylabel 'frequency'
 print('compare diastolic myocardium volumes','-dpng')
 
@@ -406,23 +446,24 @@ print('compare diastolic myocardium volumes','-dpng')
 for i = 1:100
     DETERMINE_myoSV(i,1) = DETERMINE_diastolic_myovolumes(i,1) - DETERMINE_systolic_myovolumes(i,1);
     DETERMINE_myoEF(i,1) = (DETERMINE_myoSV(i,1)/DETERMINE_diastolic_myovolumes(i,1))*100;
+    
     MESA_myoSV(i,1) = MESA_diastolic_myovolumes(i,1) - MESA_systolic_myovolumes(i,1);
     MESA_myoEF(i,1) = (MESA_myoSV(i,1)/MESA_diastolic_myovolumes(i,1))*100;
 end
 
-%plot myocardium ejection fractions
+%plot myocardium "Stroke volumes"
 figure;
 hold on
 nbins = 25;
-histogram(DETERMINE_myoSV,nbins)
-histogram(MESA_myoSV,nbins)
+histogram(DETERMINE_myoSV*0.001,nbins)
+histogram(MESA_myoSV*0.001,nbins)
 legend 'DETERMINE' ' MESA'
 title 'stroke volumes calculated using myocardium volumes'
-xlabel ' "Stroke volume" mm^3 '
+xlabel ' "Stroke volume" ml '
 ylabel 'frequency'
 print('compare stroke volumes calculated from myocardium volumes','-dpng')
 
-%plot myocardium ejection fractions
+%plot myocardium "ejection fractions"
 figure;
 hold on
 nbins = 25;
