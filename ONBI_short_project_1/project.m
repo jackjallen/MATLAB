@@ -1,7 +1,12 @@
-%% ONBI Short project 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% ONBI SHORT PROJECT 1
+%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Jack Allen
 % Supervisor: Vicente Grau
 %
+
+%% Initialise
 clear all
 close all
 clc
@@ -21,170 +26,12 @@ load('C:\Users\jesu2687\Documents\MATLAB\ONBI_short_project_1\labels.mat');
 DETERMINE_indices = Labels(2:101,3);
 MESA_indices = Labels(102:201,3);
 
-
-%% Procrustes analysis
-% This is done by concatenating the endo and epi shape vectors to produce
-% longer vectors (myo.xyz). Procrustes analysis is then performed on the
-% two myo.xyz vectors. Finally, the transformed myo.xyz vectors are split
-% to extract transformed endo and epi shape vectors.
-disp('starting procrustes analysis')
-
-%store dimensions of the shapes
-[shape_nRows , shape_nCols] = size(data(1).diastolic.endo.xyz);
-
-%use the initial data clouds as references (individual)
-dia_endo_reference = data(1).diastolic.endo.xyz;
-dia_epi_reference = data(1).diastolic.epi.xyz;
-sys_endo_reference = data(1).systolic.endo.xyz;
-sys_epi_reference = data(1).systolic.epi.xyz;
-%make a reference from the endo and epi surfaces (concatenate)
-dia_myo_reference = [dia_endo_reference(:) ; dia_epi_reference(:)];
-sys_myo_reference = [sys_endo_reference(:)  ; sys_epi_reference(:)];
-
-%initialise the sums of the shapes as zero
-% dia_endo_sum = zeros(size(dia_endo_reference));
-% dia_epi_sum = zeros(size(dia_epi_reference));
-% sys_endo_sum = zeros(size(sys_endo_reference));
-% sys_epi_sum = zeros(size(sys_epi_reference));
-% (whole shape)
-dia_myo_sum = zeros(size(dia_myo_reference));
-sys_myo_sum = zeros(size(sys_myo_reference));
-
-% Think of endo and epi as one shape (concatenate).
-for i = 1:400
-data(i).diastolic.myo.xyz = [data(i).diastolic.endo.xyz ; data(i).diastolic.epi.xyz];
-data(i).systolic.myo.xyz = [data(i).systolic.endo.xyz ; data(i).systolic.epi.xyz];
-end
-
-%p = number of times procrustes is performed.
-for p = 1:2
-% iterate so that procrustes is performed on each case (400 patients).
-for i = 1:400
-% % transform endo and epi (individually)
-% [data(i).diastolic.endo.procrustes_d, data(i).diastolic.endo.xyz] = procrustes(dia_endo_reference, data(i).diastolic.endo.xyz(:));
-% [data(i).diastolic.epi.procrustes_d, data(i).diastolic.epi.xyz] = procrustes(dia_epi_reference, data(i).diastolic.epi.xyz(:));
-% [data(i).systolic.endo.procrustes_d, data(i).systolic.endo.xyz] = procrustes(sys_endo_reference, data(i).systolic.endo.xyz(:));
-% [data(i).systolic.epi.procrustes_d, data(i).systolic.epi.xyz] = procrustes(sys_epi_reference, data(i).systolic.epi.xyz(:));
-
-% transform endo and epi as one shape vector
-[data(i).diastolic.myo.procrustes_d, data(i).diastolic.myo.xyz] = procrustes(dia_myo_reference, data(i).diastolic.myo.xyz(:));
-[data(i).systolic.myo.procrustes_d, data(i).systolic.myo.xyz] = procrustes(sys_myo_reference, data(i).systolic.myo.xyz(:));
-
-%sums for finding new means later on
-% dia_endo_sum = data(i).diastolic.endo.xyz + dia_endo_sum;
-% dia_epi_sum = data(i).diastolic.epi.xyz + dia_epi_sum;
-% sys_endo_sum = data(i).systolic.endo.xyz + sys_endo_sum;
-% sys_epi_sum = data(i).systolic.epi.xyz + sys_epi_sum;
-dia_myo_sum = data(i).diastolic.myo.xyz + dia_myo_sum;
-sys_myo_sum = data(i).systolic.myo.xyz + sys_myo_sum;
-
-end
-
-%calculate means
-% dia_endo_mean = dia_endo_sum/400;
-% dia_epi_mean = dia_epi_sum/400;
-% sys_endo_mean = sys_endo_sum/400;
-% sys_epi_mean = sys_epi_sum/400;
-dia_myo_mean = dia_myo_sum/400;
-sys_myo_mean = sys_myo_sum/400;
-
-%set means as the references for next round of procrustes
-% dia_endo_reference = dia_endo_mean;
-% dia_epi_reference = dia_epi_mean;
-% sys_endo_reference = sys_endo_mean;
-% sys_epi_reference = sys_epi_mean;
-dia_myo_reference = dia_myo_mean; 
-sys_myo_reference = sys_myo_mean;
-end
-
-% % reshape from vector to matrix.
-% % individual endo and epi shapes.
-% dia_endo_mean = reshape(dia_endo_mean,size(data(1).diastolic.endo.xyz));
-% dia_epi_mean = reshape(dia_epi_mean,size(data(1).diastolic.endo.xyz));
-% sys_endo_mean = reshape(sys_endo_mean,size(data(1).diastolic.endo.xyz));
-% sys_epi_mean = reshape(sys_epi_mean,size(data(1).diastolic.endo.xyz));
-
-% % concatenated endo and epi shapes.
-% % split the long vectors into vectors that represent the endo and epi
-% % shapes then reshape the resulting vectors to matrix form.
-dia_myo_reference = reshape(dia_myo_reference, [2*shape_nRows, shape_nCols]);
-sys_myo_reference = reshape(sys_myo_reference, [2*shape_nRows, shape_nCols]);
-for i = 1:400
-% reshape myo shapes from vector to matrix
-data(i).diastolic.myo.xyz = reshape(data(i).diastolic.myo.xyz,[2*shape_nRows, shape_nCols]);
-data(i).systolic.myo.xyz = reshape(data(i).systolic.myo.xyz,[2*shape_nRows, shape_nCols]);
-
-% extract endo and epi shapes from full shape matrices (data(i).diastolic.myo.xyz)
-data(i).diastolic.endo.xyz = data(i).diastolic.myo.xyz(1:shape_nRows, :);
-data(i).diastolic.epi.xyz = data(i).diastolic.myo.xyz(shape_nRows+1:2*shape_nRows, :);
-data(i).systolic.endo.xyz = data(i).systolic.myo.xyz(1:shape_nRows, :);
-data(i).systolic.epi.xyz = data(i).systolic.myo.xyz(shape_nRows+1:2*shape_nRows, :);
-end
-disp('finished procrustes analysis')
-%% Visualising to check procrustes output
-disp('visualise procrustes output')
-
-% plotMESH = @(M,varargin)patch('vertices',M.xyz,'faces',M.tri,'edgecolor','k','facecolor','b',varargin{:});
-
-%reference endocardium
-%diastolic
-figure
-plot3(dia_endo_reference(:,1),dia_endo_reference(:,2),dia_endo_reference(:,3),'+')
-axis equal; axis tight;
-title 'reference endocardium (diastolic)'
-%systolic
-figure
-plot3(sys_endo_reference(:,1),sys_endo_reference(:,2),sys_endo_reference(:,3),'+')
-axis equal; axis tight;
-title 'reference endocardium (diastolic)'
-
-%reference epicardium
-%distolic
-figure
-hold on
-plot3(dia_epi_reference(:,1),dia_epi_reference(:,2),dia_epi_reference(:,3),'+')
-axis equal; axis tight;
-title 'reference epicardium (diastolic)'
-%systolic
-figure
-plot3(sys_epi_reference(:,1),sys_epi_reference(:,2),sys_epi_reference(:,3),'+')
-axis equal; axis tight;
-title 'reference epicardium (systolic)'
-
-%reference (whole LV shape from patient 1)
-figure
-plot3(dia_myo_reference(:,1), dia_myo_reference(:,2), dia_myo_reference(:,3),'o');
-title 'reference LV'
-
-%patient i endocardium and epicardium
-%diastolic
-figure
-hold on
-plot3(data(i).diastolic.endo.xyz(:,1), data(i).diastolic.endo.xyz(:,2), data(i).diastolic.endo.xyz(:,3),'o'); 
-plot3(data(i).diastolic.epi.xyz(:,1), data(i).diastolic.epi.xyz(:,2), data(i).diastolic.epi.xyz(:,3),'o'); 
-title 'patient i endo and epi, diastolic'
-%systolic
-figure
-hold on
-plot3(data(i).systolic.endo.xyz(:,1), data(i).systolic.endo.xyz(:,2), data(i).systolic.endo.xyz(:,3),'o'); 
-plot3(data(i).systolic.epi.xyz(:,1), data(i).systolic.epi.xyz(:,2), data(i).systolic.epi.xyz(:,3),'o');
-title 'patient i endo and epi, systolic'
-
-%patient i whole LV shape
-%diastolic
-figure
-hold on
-plot3(data(i).diastolic.myo.xyz(:,1), data(i).diastolic.myo.xyz(:,2), data(i).diastolic.myo.xyz(:,3),'o'); 
-title 'patient i, whole LV, diastolic'
-%systolic
-figure
-hold on
-plot3(data(i).systolic.myo.xyz(:,1), data(i).systolic.myo.xyz(:,2), data(i).systolic.myo.xyz(:,3),'o'); 
-title 'patient i, whole LV, systolic'
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% make lid for myocardium
 % disp('make lid for myocardium')
-%% endo and epi volumes
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% CALCULATE ENDO AND EPI VOLUMES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 disp('calculating endo and epi volumes')
 %!!!!!!!!!!!!SPLIT calcVolumes INTO MULTIPLE FUNCTIONS!!!!!!!!!!!
 %[transformed_data.systolic.epi.tri, transformed_data.systolic.endo.tri, transformed_data.diastolic.epi.tri, transformed_data.diastolic.endo.tri ] = addLid(transformed_data);
@@ -217,8 +64,8 @@ end
 % MESA_indices = sort(MESA_indices);
 for i = MESA_indices
     for m = find(MESA_indices==i)
-        i
-        m
+        i;
+        m;
     MESA_diastolic_endoVolumes(m,1) = dia_endo_volumes(i,1);
     MESA_systolic_endoVolumes(m,1) = sys_endo_volumes(i,1);
     MESA_diastolic_epiVolumes(m,1) = dia_epi_volumes(i,1);
@@ -226,7 +73,8 @@ for i = MESA_indices
     end
 end
 
-disp('finish calculating endo and epi volumes')
+disp('finished calculating endo and epi volumes')
+
 %% plot volume histograms - comparing DETERMINE with MESA
 % 1mm^3 = 0.001ml
 %diastolic endocardium volumes
@@ -256,8 +104,11 @@ print('compare systolic endocardium volumes','-dpng')
 %calculate endocardium ejection fractions EF
 % SV = diastolic volume - systolic volume
 % EF = (SV/(diastolic volume))*100
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  CALCULATE EJECTION FRACTION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for i = DETERMINE_indices 
-    i
+    i;
     for d = find(DETERMINE_indices==i)
 DETERMINE_SV(d,1) = DETERMINE_diastolic_endoVolumes(d,1) - DETERMINE_systolic_endoVolumes(d,1);
 DETERMINE_EF(d,1) = (DETERMINE_SV(d,1)./DETERMINE_diastolic_endoVolumes(d,1))*100;
@@ -270,8 +121,9 @@ MESA_SV(d,1) = MESA_diastolic_endoVolumes(d,1) - MESA_systolic_endoVolumes(d,1);
 MESA_EF(d,1) = (MESA_SV(d,1)./MESA_diastolic_endoVolumes(d,1))*100;
     end
 end
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  CALCULATE ACCURACIES 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for i = 1:100
 % if we class over threshold as MESA ('negative') and under threshold as
 % DETERMINE ('positive')
@@ -287,14 +139,14 @@ accuracy(i) = (true_positive + true_negative)/(true_positive + false_positive + 
 sensitivity(i) = true_positive(i)/(true_positive(i)+false_negative(i));
 specificity(i) = true_negative(i)/(true_negative(i)+false_positive(i));
 end
-
+%% plot specificity-sensitivity ROC curves
 figure
 plot(specificity, sensitivity)
 title 'ejection fraction (EF) ROC'
 xlabel ' specificity'
 ylabel ' sensitivity'
 
-%accuracy versus threshold
+%% plot accuracy versus threshold
 figure
 plot(accuracy);
 %find threshold that gives greatest accuracy
@@ -306,8 +158,8 @@ trial = 55;
 plot([trial trial],[0.48 0.66], 'r')
 ylabel 'accuracy'
 xlabel 'ejection fraction threshold %'
-
-%plot ejection fraction 
+ 
+%% plot ejection fraction 
 figure
 hold on
 nbins =30;
@@ -321,7 +173,7 @@ hold on
 plot([threshold threshold],[0 15], 'g')
 legend 'DETERMINE' 'MESA' 'Threshold'
 
-%plot stroke volume (SV)
+%% plot stroke volume (SV)
 figure
 hold on
 nbins =30;
@@ -331,9 +183,11 @@ legend 'DETERMINE' 'MESA'
 title 'Stroke volumes'
 xlabel 'Stroke volume (ml)'
 ylabel 'frequency'
-print('compare stroke volumes','-dpng')
+% print('compare stroke volumes','-dpng')
 
-%% Myocardium volumes
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% CALCULATE MYOCARDIUM VOLUMES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 disp('calculating myocardium volumes')
 
 %load struct containing the triangle file for the myo 'donut' shaped lid
@@ -416,7 +270,7 @@ for i = MESA_indices
     end
 end
 
-% plot systolic myocardium volumes
+%% plot systolic myocardium volumes
 figure
 hold on
 nbins = 25;
@@ -440,7 +294,7 @@ xlabel 'myocardium volume (ml)'
 ylabel 'frequency'
 print('compare diastolic myocardium volumes','-dpng')
 
-%calculate "myocardium ejection fraction" myoEF
+%% calculate "myocardium ejection fraction" myoEF
 % myoSV = diastolic myovolume - systolic myovolume
 % myoEF = (myoSV/(diastolic volume))*100
 for i = 1:100
@@ -451,7 +305,7 @@ for i = 1:100
     MESA_myoEF(i,1) = (MESA_myoSV(i,1)/MESA_diastolic_myovolumes(i,1))*100;
 end
 
-%plot myocardium "Stroke volumes"
+%% plot myocardium "Stroke volumes"
 figure;
 hold on
 nbins = 25;
@@ -481,9 +335,9 @@ close all
 figure
 %subplot 221
 hold on
-plot3(data(i).diastolic.myoB.xyz(:,1),data(i).diastolic.myoB.xyz(:,2), data(i).diastolic.myoB.xyz(:,3))
-text(data(i).diastolic.myoB.xyz(:,1) ,  data(i).diastolic.myoB.xyz(:,2) ,  data(i).diastolic.myoB.xyz(:,3) , arrayfun( @(id)sprintf('%d',id) , 1:size(data(i).diastolic.myoB.xyz,1) , 'un',false ) )
-plot3(data(i).diastolic.myoB_full.xyz(:,1),data(i).diastolic.myoB_full.xyz(:,2), data(i).diastolic.myoB_full.xyz(:,3),'o')
+plot3(data(i).diastolic.myo.B.xyz(:,1),data(i).diastolic.myo.B.xyz(:,2), data(i).diastolic.myo.B.xyz(:,3))
+text(data(i).diastolic.myo.B.xyz(:,1) ,  data(i).diastolic.myo.B.xyz(:,2) ,  data(i).diastolic.myo.B.xyz(:,3) , arrayfun( @(id)sprintf('%d',id) , 1:size(data(i).diastolic.myo.B.xyz,1) , 'un',false ) )
+plot3(data(i).diastolic.full.xyz(:,1),data(i).diastolic.full.xyz(:,2), data(i).diastolic.full.xyz(:,3),'o')
 legend('endo and epi edge points (myo B)', 'all endo and epi points')
 
 %visualise surfaces: endo, epi and myo lid
@@ -492,154 +346,35 @@ figure
 %subplot 222
 patch('vertices',data(i).diastolic.endo.xyz,'faces',data(i).diastolic.endo.tri,'facecolor','none','EdgeColor','red')
 patch('vertices',data(i).diastolic.epi.xyz,'faces',data(i).diastolic.epi.tri,'facecolor','none','EdgeColor','blue')
-patch('vertices',data(i).diastolic.myoB.xyz,'faces',myoB.tri,'facecolor','green')
+patch('vertices',data(i).diastolic.myo.B.xyz,'faces',myoB.tri,'facecolor','green')
 legend('endo', 'epi', 'myo lid')
 
 % visualise the myocardium mesh (solid)
 %cla
 figure
 %subplot 223
-patch('vertices',data(i).diastolic.myoB_full.xyz,'faces',data(i).diastolic.myoB_full.tri,'facecolor','red')
-legend('full myo')
+patch('vertices',data(i).diastolic.myo.xyz,'faces',data(i).diastolic.myo.tri,'facecolor','red')
+legend('full myocardium')
 
 figure
 %subplot 223
-patch('vertices',data(i).systolic.myoB_full.xyz,'faces',data(i).systolic.myoB_full.tri,'facecolor','red')
-legend('full myo')
-
+patch('vertices',data(i).systolic.myo.xyz,'faces',data(i).systolic.myo.tri,'facecolor','red')
+legend('full myocardium')
 
 %visualise center of mass within myocardium mesh
 %cla
 figure
 %subplot 224
-patch('vertices',data(i).diastolic.myoB_full.xyz,'faces',data(i).diastolic.myoB_full.tri,'facecolor','g','facealpha',0.1);
+patch('vertices',data(i).diastolic.myo.xyz,'faces',data(i).diastolic.myo.tri,'facecolor','g','facealpha',0.1);
 hold on;
 plot3( data(i).diastolic.myoCenterOfMass(1) ,  data(i).diastolic.myoCenterOfMass(2) ,  data(i).diastolic.myoCenterOfMass(3) , '*r','markers',20 ); hold off
-legend('full myo', 'myo center of mass')
+legend('full myocardium', 'myocardium center of mass')
 
-%% Shape modeling
-disp('start shape modeling')
-% PCA
-% find mean shape and then use it to find the covariance matrix
-[dia_endo_covariance_matrix, sys_endo_mean_shape, sys_endo_covariance_matrix, sys_endo_mean_shape] = calcCovarianceMatrix(data);
-
-%find eigenvectors of covariance matrix.
-%columns of 'dia_endo_eigenvectors' are the eigenvectors.
-[dia_endo_eigenvectors, dia_endo_eigenvalues] = eig(dia_endo_covariance_matrix);
-[sys_endo_eigenvectors, sys_endo_eigenvalues] = eig(sys_endo_covariance_matrix);
-%************how do I plot these eigenvectors?...*********
-%****should I find covariance of x, y and z seperately?...************
-
-%find the positions of the greatest eigenvalues
-[rows, cols] = find((dia_endo_eigenvalues)/max(max(dia_endo_eigenvalues))>=(1));
-[sys_endo_rows, sys_endo_cols] = find((sys_endo_eigenvalues)/max(max(sys_endo_eigenvalues))>=(1));
-%select eigenvectors with greatest eigenvalues
-% dia_endo_eigenvectors(:,1:(cols(1,1)-1)) = 0;
-principle_eigenvectors = dia_endo_eigenvectors(:,cols);
-sys_endo_principle_eigenvectors = sys_endo_eigenvectors(:,sys_endo_cols);
-% dia_endo_eigenvectors_sum = zeros(size(dia_endo_eigenvectors,2),1);
-% for i = size(dia_endo_eigenvectors,2)
-%     dia_endo_eigenvectors_sum = dia_endo_eigenvectors(:,i) + dia_endo_eigenvectors_sum ;
-% end
-
-for i = 1:400
-    b(i) = (principle_eigenvectors')*(data(i).diastolic.endo.xyz(:) - sys_endo_mean_shape);
-    sys_endo_b(i) = (sys_endo_principle_eigenvectors')*(data(i).systolic.endo.xyz(:) - sys_endo_mean_shape);
-
-end
-
-sys_endo_max_b = max(sys_endo_b);
-sys_endo_min_b = min(sys_endo_b);
-
-% plot(b)
-figure
-histogram(sys_endo_b,20);
-sys_endo_b_std = std(sys_endo_b);
-% 
-% sys_endo_new_shape_1min = reshape(dia_endo_mean_shape + principle_eigenvectors.*min_b, [1089 3]);
-% dia_endo_new_shape_1max = reshape(dia_endo_mean_shape + principle_eigenvectors.*max_b, [1089 3]);
-% dia_endo_mean_shape = reshape(dia_endo_mean_shape, [1089 3]);
-% figure
-% hold on
-% plot3(dia_endo_mean_shape(:,1),dia_endo_mean_shape(:,2),dia_endo_mean_shape(:,3),'bo')
-% plot3(dia_endo_new_shape_1max(:,1),dia_endo_new_shape_1max(:,2),dia_endo_new_shape_1max(:,3),'go')
-% plot3(dia_endo_new_shape_1min(:,1),dia_endo_new_shape_1min(:,2),dia_endo_new_shape_1min(:,3),'ro')
-% legend 'mean' 'max b' 'min b'
-
-sys_endo_new_shape_1min = reshape(sys_endo_mean_shape + sys_endo_principle_eigenvectors.*sys_endo_min_b, [1089 3]);
-sys_endo_new_shape_1max = reshape(sys_endo_mean_shape + sys_endo_principle_eigenvectors.*sys_endo_max_b, [1089 3]);
-sys_endo_mean_shape = reshape(sys_endo_mean_shape, [1089 3]);
-figure 
-hold on
-% plot3(sys_endo_mean_shape(:,1),sys_endo_mean_shape(:,2),sys_endo_mean_shape(:,3),'go')
-plot3(sys_endo_new_shape_1max(:,1),sys_endo_new_shape_1max(:,2),sys_endo_new_shape_1max(:,3),'r.')
-plot3(sys_endo_new_shape_1min(:,1),sys_endo_new_shape_1min(:,2),sys_endo_new_shape_1min(:,3),'bo')
-title 'sys endo eigenmode variation'
-legend 'max b' 'min b'
-
-
-% ICA
-%[icaOut] = fastica(dia_endo_covariance_matrix)
-
-
-
-disp('finished shape modeling')
-%% Shape modelling - visualisation of new shape
-hold on
-plot3(dia_endo_new_shape(:,1),dia_endo_new_shape(:,2), dia_endo_new_shape(:,3),'.')
-sys_endo_mean_shape = reshape(sys_endo_mean_shape, size(data(1).diastolic.endo.xyz));
-plot3(sys_endo_mean_shape(:,1),sys_endo_mean_shape(:,2), sys_endo_mean_shape(:,3),'+')
-
-%%
-
-% phi = dia_endo_eigenvectors';
-% phi = (sortrows(phi))';
-
-%reverse the eigenvalue matrix
-dia_endo_eigenvalues = dia_endo_eigenvalues(end:-1:1);
-% reverse the columns
-dia_endo_eigenvectors = dia_endo_eigenvectors(:,end:-1:1); 
-dia_endo_eigenvectors=dia_endo_eigenvectors';
-
-% model parameters 'b'
-
-%phi = dia_endo_eigenvectors(:);
-
-% select some of the largest eigenvalues
-%eigenvalue_indices = find(phi>0.6, 20);
-%phi(eigenvalue_indices);
-
-% sortedPhi = sort(phi, 'descend');
-% phi = reshape((sortedPhi.'), size(dia_endo_covariance_matrix)); %each column shows an eigenvetor
-
-% %coeff = pca(covariance_matrix)
-
-% calculate new shapes, using different parameters b
-%!!!!!!!!!!!WHAT VALUES SHOULD 'b' BE?
-% new_shape = mean_shape + (phi)*(b);
-%%
-% for i = 1:size(dia_endo_eigenvectors,2)
-% b(1,i) = (dia_endo_eigenvectors(:,i).')*(data(1).diastolic.endo.xyz(:) - dia_endo_mean_shape); %transpose phi
-% end
-
-%%
-for i = 1:400
-b(1,i) = (dia_endo_eigenvectors(:,i)')*(data(1).diastolic.endo.xyz(:) - sys_endo_mean_shape); %transpose phi
-end
-%%
-% plot in pca space... not sure if this is correct...
-for i = 1:400
-pc1 = eigenvectors * data(i).diastolic.endo.xyz;
-% pc2 = eigenvectors * transformed_data(i).systolic.endo.xyz;
-hold on
-plot(pc1(1,:),pc1(2,:),'o');
-% plot(pc2(1,:),pc2(2,:),'.');
-
-end
-
-%% calculate triangle side lengths
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% CALCULATE MESH AREAS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% calculate triangle side lengths
 %!!!!! NEED TO CORRECT THIS TO INCLUDE THE LIDS
-
 for i = 1:400 
     for d = find(MESA_indices==i)
        
@@ -662,7 +397,6 @@ for i = 1:400
        MESA_sys_myo_areas(d,1) = calcTriMeshArea(MESA_sys_myo_sides);
     end
 end
-
 for i = 1:400
     for d = find(DETERMINE_indices==i)
        DETERMINE_dia_endo_sides = calcTriSides(data(i).diastolic.endo.tri, data(i).diastolic.endo.xyz); 
@@ -829,8 +563,6 @@ xlabel 'area/volume (mm^-1)'
 ylabel 'frequency'
 print('compare diastolic myocardium surface areas to volume ratios','-dpng')
 
-
-
 %% calculate total areas(heron's forumla)
 %!!!!! NEED TO CORRECT THIS TO INCLUDE THE LIDS
 % endo_area = calcTriMeshArea(endo_sides);
@@ -840,3 +572,511 @@ print('compare diastolic myocardium surface areas to volume ratios','-dpng')
 % endo_centroid = mean(endo);
 % epi_centroid = mean(epi);
 % 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% SUPPORT VECTOR MACHINE (SVM) CLASSIFICATION - VOLUMES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% plot data to perform svm on
+hold on
+% plot3(DETERMINE_EF, DETERMINE_systolic_endoVolumes,DETERMINE_diastolic_endoVolumes,'o')
+% plot3(MESA_EF, MESA_systolic_endoVolumes,MESA_diastolic_endoVolumes,'o')
+plot(DETERMINE_EF, DETERMINE_systolic_endoVolumes,'o')
+plot(MESA_EF, MESA_systolic_endoVolumes,'o')
+hold off
+
+%% train SVM
+trainingdata(:,1) = [DETERMINE_EF ; MESA_EF];
+trainingdata(:,2) = [DETERMINE_systolic_endoVolumes ; MESA_systolic_endoVolumes];
+%must be column vector, with each row corresponding to the value of the 
+%corresponding row in trainingdata
+classNames(1:100,1) = 'd';
+classNames(101:200,1) = 'm';
+% names(1:100,2) = 1;
+% names(101:200,2) = 2;
+
+% svmStruct = svmtrain(trainingdata,group,'ShowPlot', true);
+
+% SVMModel = fitcsvm(trainingdata, group, 'Standardize', true)
+SVMModel_1 = fitcsvm(trainingdata, classNames,'KernelScale','auto','Standardize',true); %'ClassNames',{'d','m'});
+classOrder = SVMModel_1.ClassNames
+figure
+gscatter(trainingdata(:,1),trainingdata(:,2),classNames)
+hold on
+sv = SVMModel_1.SupportVectors;
+plot(sv(:,1),sv(:,2),'ko','MarkerSize',10)
+legend('DETERMINE','MESA','Support Vector')
+title 'SVM for EF and sys endo volume'
+hold off
+
+%% cross-validate the SVM classifier
+CVSVMModel_1 = crossval(SVMModel_1);
+%calculate classification error
+misclass_1 = kfoldLoss(CVSVMModel_1);
+misclassification_rate_1 = misclass_1
+
+%% SVM prediction
+[label,score] = predict(SVMModel_1,newX);
+
+%% SVM: EF and myo EF
+% hold on
+% % plot3(DETERMINE_EF, DETERMINE_systolic_endoVolumes,DETERMINE_diastolic_endoVolumes,'o')
+% % plot3(MESA_EF, MESA_systolic_endoVolumes,MESA_diastolic_endoVolumes,'o')
+% plot(DETERMINE_EF, DETERMINE_myoEF,'o')
+% plot(MESA_EF, MESA_myoEF,'o')
+
+%train the SVM
+trainingdata(:,1) = [DETERMINE_EF ; MESA_EF];
+trainingdata(:,2) = [DETERMINE_myoEF ; MESA_myoEF];
+names = char(200,1);
+names(1:100,1) = 'd';
+names(101:200,1) = 'm';
+% names(1:100,2) = 1;
+% names(101:200,2) = 2;
+
+% svmtrain will be removed from later versions of matlab.
+% svmStruct = svmtrain(trainingdata,names,'ShowPlot', true);
+
+% SVMModel = fitcsvm(trainingdata, group, 'Standardize', true)
+SVMModel_2 = fitcsvm(trainingdata, names, 'KernelFunction', 'linear' )
+classOrder_2 = SVMModel_2.ClassNames
+figure
+title 'SVM for EF and myoEF'
+gscatter(trainingdata(:,1),trainingdata(:,2),names)
+hold on
+sv = SVMModel_2.SupportVectors;
+plot(sv(:,1),sv(:,2),'ko','MarkerSize',10)
+legend('DETERMINE','MESA','Support Vector')
+% x = 10:80;
+% plot(10:80, (0.005*x)+ -7.0407);
+hold off
+
+
+%% cross-validate the SVM
+%"Determine the out-of-sample misclassification rate"
+CVSVMModel_2 = crossval(SVMModel_2);
+misclass_2 = kfoldLoss(CVSVMModel_2);
+misclassification_rate_2 = misclass_2
+
+%% performance curves
+% [X,Y] = perfcurve(names,scores,posclass) 
+
+% %Comparing classifiers
+% resp(1:200,1:2) = strcmp(names,'d'); % resp = 1, if Y = 'b', or 0 if Y = 'g'
+% pred = trainingdata(:,1:2);
+% mdl = fitglm(pred,resp,'Distribution','binomial','Link','logit');
+% score_log = mdl.Fitted.Probability; % Probability estimates
+% [X,Y,T,AUC] = perfcurve(names,score_svm(:,mdlSVM.ClassNames),'true');
+% AUC
+% resp = strcmp(names(:,1:2),'b'); 
+% pred = trainingdata(:,1:2);
+% mdl = fitglm(pred,resp,'Distribution','binomial','Link','logit');
+% score_log = mdl.Fitted.Probability;
+% [Xsvm,Ysvm,Tsvm,AUCsvm] = perfcurve(resp,score_svm(:,mdlSVM.ClassNames),'true');
+pred = trainingdata(:,1:2);
+
+for i = 1:200
+    if names(i,1) == 'm'
+        resp(i,1) = 1
+    else resp(i,1) = 0
+    end
+end
+
+SVMModel_2 = fitPosterior(SVMModel_2);
+SVMModel_1 = fitPosterior(SVMModel_1);
+[~,scores2] = resubPredict(SVMModel_2);
+[~,scores1] = resubPredict(SVMModel_1);
+[x1,y1,~,auc1] = perfcurve(names,scores1(:,2),1);
+[x2,y2,~,auc2] = perfcurve(resp,scores2(:,2),1);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% PROCRUSTES ANALYSIS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This is done by concatenating the endo and epi shape vectors to produce
+% longer vectors (myo.xyz). Procrustes analysis is then performed on the
+% two myo.xyz vectors. Finally, the transformed myo.xyz vectors are split
+% to extract transformed endo and epi shape vectors.
+disp('starting procrustes analysis')
+
+%store dimensions of the shapes
+[shape_nRows , shape_nCols] = size(data(1).diastolic.endo.xyz);
+
+%use the initial data clouds as references (individual)
+dia_endo_reference = data(1).diastolic.endo.xyz;
+dia_epi_reference = data(1).diastolic.epi.xyz;
+sys_endo_reference = data(1).systolic.endo.xyz;
+sys_epi_reference = data(1).systolic.epi.xyz;
+%make a reference from the endo and epi surfaces (concatenate)
+dia_myo_reference = [dia_endo_reference(:) ; dia_epi_reference(:)];
+sys_myo_reference = [sys_endo_reference(:)  ; sys_epi_reference(:)];
+
+%initialise the sums of the shapes as zero
+% dia_endo_sum = zeros(size(dia_endo_reference));
+% dia_epi_sum = zeros(size(dia_epi_reference));
+% sys_endo_sum = zeros(size(sys_endo_reference));
+% sys_epi_sum = zeros(size(sys_epi_reference));
+% (whole shape)
+dia_myo_sum = zeros(size(dia_myo_reference));
+sys_myo_sum = zeros(size(sys_myo_reference));
+
+% Think of endo and epi as one shape (concatenate).
+for i = 1:400
+data(i).diastolic.myo.xyz = [data(i).diastolic.endo.xyz ; data(i).diastolic.epi.xyz];
+data(i).systolic.myo.xyz = [data(i).systolic.endo.xyz ; data(i).systolic.epi.xyz];
+end
+
+%p = number of times procrustes is performed.
+for p = 1:2
+% iterate so that procrustes is performed on each case (400 patients).
+for i = 1:400
+% % transform endo and epi (individually)
+% [data(i).diastolic.endo.procrustes_d, data(i).diastolic.endo.xyz] = procrustes(dia_endo_reference, data(i).diastolic.endo.xyz(:));
+% [data(i).diastolic.epi.procrustes_d, data(i).diastolic.epi.xyz] = procrustes(dia_epi_reference, data(i).diastolic.epi.xyz(:));
+% [data(i).systolic.endo.procrustes_d, data(i).systolic.endo.xyz] = procrustes(sys_endo_reference, data(i).systolic.endo.xyz(:));
+% [data(i).systolic.epi.procrustes_d, data(i).systolic.epi.xyz] = procrustes(sys_epi_reference, data(i).systolic.epi.xyz(:));
+
+% transform endo and epi as one shape vector
+[data(i).diastolic.myo.procrustes_d, data(i).diastolic.myo.xyz] = procrustes(dia_myo_reference, data(i).diastolic.myo.xyz(:));
+[data(i).systolic.myo.procrustes_d, data(i).systolic.myo.xyz] = procrustes(sys_myo_reference, data(i).systolic.myo.xyz(:));
+
+%sums for finding new means later on
+% dia_endo_sum = data(i).diastolic.endo.xyz + dia_endo_sum;
+% dia_epi_sum = data(i).diastolic.epi.xyz + dia_epi_sum;
+% sys_endo_sum = data(i).systolic.endo.xyz + sys_endo_sum;
+% sys_epi_sum = data(i).systolic.epi.xyz + sys_epi_sum;
+dia_myo_sum = data(i).diastolic.myo.xyz + dia_myo_sum;
+sys_myo_sum = data(i).systolic.myo.xyz + sys_myo_sum;
+
+end
+
+%calculate means
+% dia_endo_mean = dia_endo_sum/400;
+% dia_epi_mean = dia_epi_sum/400;
+% sys_endo_mean = sys_endo_sum/400;
+% sys_epi_mean = sys_epi_sum/400;
+dia_myo_mean = dia_myo_sum/400;
+sys_myo_mean = sys_myo_sum/400;
+
+%set means as the references for next round of procrustes
+% dia_endo_reference = dia_endo_mean;
+% dia_epi_reference = dia_epi_mean;
+% sys_endo_reference = sys_endo_mean;
+% sys_epi_reference = sys_epi_mean;
+dia_myo_reference = dia_myo_mean; 
+sys_myo_reference = sys_myo_mean;
+end
+
+% % reshape from vector to matrix.
+% % individual endo and epi shapes.
+% dia_endo_mean = reshape(dia_endo_mean,size(data(1).diastolic.endo.xyz));
+% dia_epi_mean = reshape(dia_epi_mean,size(data(1).diastolic.endo.xyz));
+% sys_endo_mean = reshape(sys_endo_mean,size(data(1).diastolic.endo.xyz));
+% sys_epi_mean = reshape(sys_epi_mean,size(data(1).diastolic.endo.xyz));
+
+% % concatenated endo and epi shapes.
+% % split the long vectors into vectors that represent the endo and epi
+% % shapes then reshape the resulting vectors to matrix form.
+dia_myo_reference = reshape(dia_myo_reference, [2*shape_nRows, shape_nCols]);
+sys_myo_reference = reshape(sys_myo_reference, [2*shape_nRows, shape_nCols]);
+for i = 1:400
+% reshape myo shapes from vector to matrix
+data(i).diastolic.myo.xyz = reshape(data(i).diastolic.myo.xyz,[2*shape_nRows, shape_nCols]);
+data(i).systolic.myo.xyz = reshape(data(i).systolic.myo.xyz,[2*shape_nRows, shape_nCols]);
+
+% extract endo and epi shapes from full shape matrices (data(i).diastolic.myo.xyz)
+data(i).diastolic.endo.xyz = data(i).diastolic.myo.xyz(1:shape_nRows, :);
+data(i).diastolic.epi.xyz = data(i).diastolic.myo.xyz(shape_nRows+1:2*shape_nRows, :);
+data(i).systolic.endo.xyz = data(i).systolic.myo.xyz(1:shape_nRows, :);
+data(i).systolic.epi.xyz = data(i).systolic.myo.xyz(shape_nRows+1:2*shape_nRows, :);
+end
+disp('finished procrustes analysis')
+
+%% Visualise procrustes
+
+
+disp('visualise procrustes output')
+
+% plotMESH = @(M,varargin)patch('vertices',M.xyz,'faces',M.tri,'edgecolor','k','facecolor','b',varargin{:});
+
+%reference endocardium
+%diastolic
+figure
+plot3(dia_endo_reference(:,1),dia_endo_reference(:,2),dia_endo_reference(:,3),'+')
+axis equal; axis tight;
+title 'reference endocardium (diastolic)'
+%systolic
+figure
+plot3(sys_endo_reference(:,1),sys_endo_reference(:,2),sys_endo_reference(:,3),'+')
+axis equal; axis tight;
+title 'reference endocardium (diastolic)'
+
+%reference epicardium
+%distolic
+figure
+hold on
+plot3(dia_epi_reference(:,1),dia_epi_reference(:,2),dia_epi_reference(:,3),'+')
+axis equal; axis tight;
+title 'reference epicardium (diastolic)'
+%systolic
+figure
+plot3(sys_epi_reference(:,1),sys_epi_reference(:,2),sys_epi_reference(:,3),'+')
+axis equal; axis tight;
+title 'reference epicardium (systolic)'
+
+%reference (whole LV shape from patient 1)
+figure
+plot3(dia_myo_reference(:,1), dia_myo_reference(:,2), dia_myo_reference(:,3),'o');
+title 'reference LV'
+
+%patient i endocardium and epicardium
+%diastolic
+figure
+hold on
+plot3(data(i).diastolic.endo.xyz(:,1), data(i).diastolic.endo.xyz(:,2), data(i).diastolic.endo.xyz(:,3),'o'); 
+plot3(data(i).diastolic.epi.xyz(:,1), data(i).diastolic.epi.xyz(:,2), data(i).diastolic.epi.xyz(:,3),'o'); 
+title 'patient i endo and epi, diastolic'
+%systolic
+figure
+hold on
+plot3(data(i).systolic.endo.xyz(:,1), data(i).systolic.endo.xyz(:,2), data(i).systolic.endo.xyz(:,3),'o'); 
+plot3(data(i).systolic.epi.xyz(:,1), data(i).systolic.epi.xyz(:,2), data(i).systolic.epi.xyz(:,3),'o');
+title 'patient i endo and epi, systolic'
+
+%patient i whole LV shape
+%diastolic
+figure
+hold on
+plot3(data(i).diastolic.myo.xyz(:,1), data(i).diastolic.myo.xyz(:,2), data(i).diastolic.myo.xyz(:,3),'o'); 
+title 'patient i, whole LV, diastolic'
+%systolic
+figure
+hold on
+plot3(data(i).systolic.myo.xyz(:,1), data(i).systolic.myo.xyz(:,2), data(i).systolic.myo.xyz(:,3),'o'); 
+title 'patient i, whole LV, systolic'
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% SHAPE MODELING
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+disp('start shape modeling')
+%% PCA
+% see Cootes tutorial: http://personalpages.manchester.ac.uk/staff/timothy.f.cootes/Models/app_models.pdf
+
+% 
+%     coeff = pca(data(1).diastolic.endo.xyz)
+% figure
+% hold on
+%     plot3(data(1).diastolic.endo.xyz(:,1), data(1).diastolic.endo.xyz(:,2), data(1).diastolic.endo.xyz(:,3),'o'); 
+%     plot3(coeff(:,1),coeff(:,2),coeff(:,3))
+
+%% find mean shape and then use it to find the covariance matrix
+disp('started calculating covariance and mean shape')
+[dia_endo_covariance_matrix, dia_endo_mean_shape, sys_endo_covariance_matrix, sys_endo_mean_shape, sys_myo_covariance_matrix, sys_myo_mean_shape] = calcCovarianceMatrix(data);
+disp('finished calculating covariance and mean shape')
+%% find eigenvectors of covariance matrix.
+%columns of 'dia_endo_eigenvectors' are the eigenvectors.
+disp('started calculating eigenvectors of covariance matrix')
+[dia_endo_eigenvectors, dia_endo_eigenvalues] = eig(dia_endo_covariance_matrix);
+[sys_endo_eigenvectors, sys_endo_eigenvalues] = eig(sys_endo_covariance_matrix);
+
+%full shape (endo and epi)
+[sys_myo_eigenvectors, sys_myo_eigenvalues] = eig(sys_myo_covariance_matrix);
+
+%************how do I plot these eigenvectors?...*********
+%****should I find covariance of x, y and z seperately?...************
+
+% % Each eigenvalue gives the variance of the data about the mean in the
+% % direction of the corresponding eigenvector. Compute the total variance
+% totalVariance = sum(dia_endo_eigenvalues(:));
+% proportion = 1;
+% %Choose the first t largest eigenvalues such that
+% p = proportion*totalVariance;
+% a = dia_endo_eigenvalues/sum(dia_endo_eigenvalues(:));
+disp('finished calculating eigenvectors of covariance matrix')
+%% sort eigenvalues in descending order
+sorted_dia_endo_eigenvalues = sort(dia_endo_eigenvalues(:),'descend');
+sorted_sys_endo_eigenvalues = sort(sys_endo_eigenvalues(:),'descend');
+sorted_sys_myo_eigenvalues = sort(sys_myo_eigenvalues(:),'descend');
+%% find the positions of the greatest eigenvalues
+% find the indices of the principle eigenvalue
+[dia_endo_rows, dia_endo_cols] = find((dia_endo_eigenvalues)/max(max(dia_endo_eigenvalues))>=(1));
+[sys_endo_rows, sys_endo_cols] = find((sys_endo_eigenvalues)/max(max(sys_endo_eigenvalues))>=(1));
+[sys_myo_rows, sys_myo_cols] = find((sys_myo_eigenvalues)/max(max(sys_myo_eigenvalues))>=(1));
+%select eigenvectors with greatest eigenvalues
+% dia_endo_eigenvectors(:,1:(cols(1,1)-1)) = 0;
+dia_endo_principle_eigenvector = dia_endo_eigenvectors(:,dia_endo_cols);
+sys_endo_principle_eigenvector = sys_endo_eigenvectors(:,sys_endo_cols);
+sys_myo_principle_eigenvector = sys_myo_eigenvectors(:,sys_myo_cols);
+% dia_endo_eigenvectors_sum = zeros(size(dia_endo_eigenvectors,2),1);
+% for i = size(dia_endo_eigenvectors,2)
+%     dia_endo_eigenvectors_sum = dia_endo_eigenvectors(:,i) + dia_endo_eigenvectors_sum ;
+% end
+
+%% Using +/- 3*sqrt(eigenvector) as b
+
+%systolic, endocardium
+% sys_endo_min_b = - 3*sqrt(sqrt((sys_endo_principle_eigenvector).^2));
+% sys_endo_max_b = 3*sqrt(sqrt((sys_endo_principle_eigenvector).^2));
+sys_endo_min_b = - 3*sqrt(sys_endo_principle_eigenvector);
+sys_endo_max_b = 3*sqrt(sys_endo_principle_eigenvector);
+sys_endo_new_shape_1min = reshape(sys_endo_mean_shape + sys_endo_principle_eigenvector.*sys_endo_min_b, [1089 3]);
+sys_endo_new_shape_1max = reshape(sys_endo_mean_shape + sys_endo_principle_eigenvector.*sys_endo_max_b, [1089 3]);
+sys_endo_mean_shape = reshape(sys_endo_mean_shape, [1089 3]);
+figure
+title 'PCA - first eigenmode - systolic endocardium'
+hold on
+plot3(sys_endo_mean_shape(:,1),sys_endo_mean_shape(:,2),sys_endo_mean_shape(:,3),'g.')
+plot3(sys_endo_new_shape_1max(:,1),sys_endo_new_shape_1max(:,2),sys_endo_new_shape_1max(:,3),'ro')
+plot3(sys_endo_new_shape_1min(:,1),sys_endo_new_shape_1min(:,2),sys_endo_new_shape_1min(:,3),'bo')
+legend 'mean' 'max b' 'min b'
+
+% %systolic, epicardium
+% sys_epi_min_b = - 3*sqrt(sqrt((sys_epi_principle_eigenvector).^2));
+% sys_epi_max_b = 3*sqrt(sqrt((sys_epi_principle_eigenvector).^2));
+% sys_epi_new_shape_1min = reshape(sys_epi_mean_shape + sys_epi_principle_eigenvector.*sys_epi_min_b, [1089 3]);
+% sys_epi_new_shape_1max = reshape(sys_epi_mean_shape + sys_epi_principle_eigenvector.*sys_epi_max_b, [1089 3]);
+% sys_epi_mean_shape = reshape(sys_epi_mean_shape, [1089 3]);
+% figure
+% title 'PCA - first eigenmode - systolic endocardium'
+% hold on
+% plot3(sys_epi_mean_shape(:,1),sys_epi_mean_shape(:,2),sys_epi_mean_shape(:,3),'g.')
+% plot3(sys_epi_new_shape_1max(:,1),sys_epi_new_shape_1max(:,2),sys_epi_new_shape_1max(:,3),'ro')
+% plot3(sys_epi_new_shape_1min(:,1),sys_epi_new_shape_1min(:,2),sys_epi_new_shape_1min(:,3),'bo')
+% legend 'mean' 'max b' 'min b'
+
+%diastolic, endocardium
+dia_endo_min_b = - 3*sqrt(dia_endo_principle_eigenvector);
+dia_endo_max_b = 3*sqrt(dia_endo_principle_eigenvector);
+dia_endo_new_shape_1min = reshape(dia_endo_mean_shape + dia_endo_principle_eigenvector.*dia_endo_min_b, [1089 3]);
+dia_endo_new_shape_1max = reshape(dia_endo_mean_shape + dia_endo_principle_eigenvector.*dia_endo_max_b, [1089 3]);
+dia_endo_mean_shape = reshape(dia_endo_mean_shape, [1089 3]);
+figure
+title 'PCA - first eigenmode - diastolic endocardium'
+hold on
+plot3(dia_endo_mean_shape(:,1),dia_endo_mean_shape(:,2),dia_endo_mean_shape(:,3),'g.')
+plot3(dia_endo_new_shape_1max(:,1),dia_endo_new_shape_1max(:,2),dia_endo_new_shape_1max(:,3),'ro')
+plot3(dia_endo_new_shape_1min(:,1),dia_endo_new_shape_1min(:,2),dia_endo_new_shape_1min(:,3),'bo')
+legend 'mean' 'max b' 'min b'
+
+%myocardium
+sys_myo_min_b = - 3*sqrt(sys_myo_principle_eigenvector);
+sys_myo_max_b = 3*sqrt(sys_myo_principle_eigenvector);
+sys_myo_new_shape_1min = reshape(sys_myo_mean_shape + sys_myo_principle_eigenvector.*sys_myo_min_b, [2178 3]);
+sys_myo_new_shape_1max = reshape(sys_myo_mean_shape + sys_myo_principle_eigenvector.*sys_myo_max_b, [2178 3]);
+sys_myo_mean_shape = reshape(sys_myo_mean_shape, [2178 3]);
+figure
+title 'PCA - first eigenmode - systolic myocardium'
+hold on
+plot3(sys_myo_mean_shape(:,1),sys_myo_mean_shape(:,2),sys_myo_mean_shape(:,3),'g.')
+plot3(sys_myo_new_shape_1max(:,1),sys_myo_new_shape_1max(:,2),sys_myo_new_shape_1max(:,3),'ro')
+plot3(sys_myo_new_shape_1min(:,1),sys_myo_new_shape_1min(:,2),sys_myo_new_shape_1min(:,3),'bo')
+legend 'mean' 'max b' 'min b'
+
+ %% finding b by analysing each of the training shapes
+% for i = 1:400
+%     dia_endo_b(i) = (dia_endo_principle_eigenvectors')*(data(i).diastolic.endo.xyz(:) - dia_endo_mean_shape);
+%     sys_endo_b(i) = (sys_endo_principle_eigenvectors')*(data(i).systolic.endo.xyz(:) - sys_endo_mean_shape);
+% end
+% 
+% % sys_endo_max_b = max(sys_endo_b);
+% % sys_endo_min_b = min(sys_endo_b);
+% 
+% % plot(b)
+% figure
+% hold on
+% histogram(dia_endo_b,20);
+% histogram(sys_endo_b,20);
+% legend 'diastolic b' 'systolic b'
+% 
+% dia_endo_max_b = std(dia_endo_b);
+% dia_endo_min_b = -std(dia_endo_b);
+% sys_endo_max_b = std(sys_endo_b);
+% sys_endo_min_b = -std(sys_endo_b);
+
+%% visualise eigenmodes of shape variation
+sys_endo_new_shape_1min = reshape(sys_endo_mean_shape + sys_endo_principle_eigenvector.*sys_endo_min_b, [1089 3]);
+sys_endo_new_shape_1max = reshape(sys_endo_mean_shape + sys_endo_principle_eigenvector.*sys_endo_max_b, [1089 3]);
+sys_endo_mean_shape = reshape(sys_endo_mean_shape, [1089 3]);
+figure 
+hold on
+plot3(sys_endo_mean_shape(:,1),sys_endo_mean_shape(:,2),sys_endo_mean_shape(:,3),'g.')
+plot3(sys_endo_new_shape_1max(:,1),sys_endo_new_shape_1max(:,2),sys_endo_new_shape_1max(:,3),'ro')
+plot3(sys_endo_new_shape_1min(:,1),sys_endo_new_shape_1min(:,2),sys_endo_new_shape_1min(:,3),'bo')
+title 'sys endo eigenmode variation'
+legend 'mean' 'max b' 'min b'
+
+figure
+patch('Vertices',sys_endo_new_shape_1max,'Faces',data(1).systolic.endo.tri,'FaceColor','red')
+figure
+patch('Vertices',sys_endo_new_shape_1min,'Faces',data(1).systolic.endo.tri,'FaceColor','blue')
+
+dia_endo_new_shape_1min = reshape(dia_endo_mean_shape + dia_endo_principle_eigenvector.*dia_endo_min_b, [1089 3]);
+dia_endo_new_shape_1max = reshape(dia_endo_mean_shape + dia_endo_principle_eigenvector.*dia_endo_max_b, [1089 3]);
+dia_endo_mean_shape = reshape(dia_endo_mean_shape, [1089 3]);
+figure 
+hold on
+plot3(dia_endo_mean_shape(:,1),dia_endo_mean_shape(:,2),dia_endo_mean_shape(:,3),'g.')
+plot3(dia_endo_new_shape_1max(:,1),dia_endo_new_shape_1max(:,2),dia_endo_new_shape_1max(:,3),'ro')
+plot3(dia_endo_new_shape_1min(:,1),dia_endo_new_shape_1min(:,2),dia_endo_new_shape_1min(:,3),'bo')
+title 'dia endo eigenmode variation'
+legend 'mean' 'max b' 'min b'
+
+figure
+patch('Vertices',dia_endo_new_shape_1max,'Faces',data(1).diastolic.endo.tri,'FaceColor','red')
+figure
+patch('Vertices',dia_endo_new_shape_1min,'Faces',data(1).diastolic.endo.tri,'FaceColor','blue')
+
+% ICA
+%[icaOut] = fastica(dia_endo_covariance_matrix)
+
+
+disp('finished shape modeling')
+%% Shape modelling - visualisation of new shape
+hold on
+plot3(dia_endo_new_shape(:,1),dia_endo_new_shape(:,2), dia_endo_new_shape(:,3),'.')
+sys_endo_mean_shape = reshape(sys_endo_mean_shape, size(data(1).diastolic.endo.xyz));
+plot3(sys_endo_mean_shape(:,1),sys_endo_mean_shape(:,2), sys_endo_mean_shape(:,3),'+')
+
+%%
+% phi = dia_endo_eigenvectors';
+% phi = (sortrows(phi))';
+
+%reverse the eigenvalue matrix
+dia_endo_eigenvalues = dia_endo_eigenvalues(end:-1:1);
+% reverse the columns
+dia_endo_eigenvectors = dia_endo_eigenvectors(:,end:-1:1); 
+dia_endo_eigenvectors=dia_endo_eigenvectors';
+
+% model parameters 'b'
+
+%phi = dia_endo_eigenvectors(:);
+
+% select some of the largest eigenvalues
+%eigenvalue_indices = find(phi>0.6, 20);
+%phi(eigenvalue_indices);
+
+% sortedPhi = sort(phi, 'descend');
+% phi = reshape((sortedPhi.'), size(dia_endo_covariance_matrix)); %each column shows an eigenvetor
+
+% %coeff = pca(covariance_matrix)
+
+% calculate new shapes, using different parameters b
+%!!!!!!!!!!!WHAT VALUES SHOULD 'b' BE?
+% new_shape = mean_shape + (phi)*(b);
+%%
+% for i = 1:size(dia_endo_eigenvectors,2)
+% b(1,i) = (dia_endo_eigenvectors(:,i).')*(data(1).diastolic.endo.xyz(:) - dia_endo_mean_shape); %transpose phi
+% end
+
+%%
+for i = 1:400
+b(1,i) = (dia_endo_eigenvectors(:,i)')*(data(1).diastolic.endo.xyz(:) - sys_endo_mean_shape); %transpose phi
+end
+%%
+% plot in pca space... not sure if this is correct...
+for i = 1:400
+pc1 = eigenvectors * data(i).diastolic.endo.xyz;
+% pc2 = eigenvectors * transformed_data(i).systolic.endo.xyz;
+hold on
+plot(pc1(1,:),pc1(2,:),'o');
+% plot(pc2(1,:),pc2(2,:),'.');
+
+end
