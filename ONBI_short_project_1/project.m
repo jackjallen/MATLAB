@@ -597,25 +597,25 @@ classNames(101:200,1) = 'm';
 % svmStruct = svmtrain(trainingdata,group,'ShowPlot', true);
 
 % SVMModel = fitcsvm(trainingdata, group, 'Standardize', true)
-SVMModel_1 = fitcsvm(trainingdata, classNames,'KernelScale','auto','Standardize',true); %'ClassNames',{'d','m'});
-classOrder = SVMModel_1.ClassNames
+SVMModel = fitcsvm(trainingdata, classNames,'KernelScale','auto','Standardize',true); %'ClassNames',{'d','m'});
+classOrder = SVMModel.ClassNames
 figure
 gscatter(trainingdata(:,1),trainingdata(:,2),classNames)
 hold on
-sv = SVMModel_1.SupportVectors;
+sv = SVMModel.SupportVectors;
 plot(sv(:,1),sv(:,2),'ko','MarkerSize',10)
 legend('DETERMINE','MESA','Support Vector')
 title 'SVM for EF and sys endo volume'
 hold off
 
 %% cross-validate the SVM classifier
-CVSVMModel_1 = crossval(SVMModel_1);
+CVSVMModel = crossval(SVMModel_1);
 %calculate classification error
-misclass_1 = kfoldLoss(CVSVMModel_1);
-misclassification_rate_1 = misclass_1
+misclass = kfoldLoss(CVSVMModel_1);
+misclassification_rate = misclass
 
 %% SVM prediction
-[label,score] = predict(SVMModel_1,newX);
+[label,score] = predict(SVMModel,newX);
 
 %% SVM: EF and myo EF
 % hold on
@@ -637,13 +637,13 @@ names(101:200,1) = 'm';
 % svmStruct = svmtrain(trainingdata,names,'ShowPlot', true);
 
 % SVMModel = fitcsvm(trainingdata, group, 'Standardize', true)
-SVMModel_2 = fitcsvm(trainingdata, names, 'KernelFunction', 'linear' )
-classOrder_2 = SVMModel_2.ClassNames
+SVMModel = fitcsvm(trainingdata, names, 'KernelFunction', 'linear' )
+classOrder = SVMModel.ClassNames
 figure
 title 'SVM for EF and myoEF'
 gscatter(trainingdata(:,1),trainingdata(:,2),names)
 hold on
-sv = SVMModel_2.SupportVectors;
+sv = SVMModel.SupportVectors;
 plot(sv(:,1),sv(:,2),'ko','MarkerSize',10)
 legend('DETERMINE','MESA','Support Vector')
 % x = 10:80;
@@ -653,9 +653,9 @@ hold off
 
 %% cross-validate the SVM
 %"Determine the out-of-sample misclassification rate"
-CVSVMModel_2 = crossval(SVMModel_2);
-misclass_2 = kfoldLoss(CVSVMModel_2);
-misclassification_rate_2 = misclass_2
+CVSVMModel = crossval(SVMModel);
+misclassification_rate = kfoldLoss(CVSVMModel)
+
 
 %% performance curves
 % [X,Y] = perfcurve(names,scores,posclass) 
@@ -672,21 +672,22 @@ misclassification_rate_2 = misclass_2
 % mdl = fitglm(pred,resp,'Distribution','binomial','Link','logit');
 % score_log = mdl.Fitted.Probability;
 % [Xsvm,Ysvm,Tsvm,AUCsvm] = perfcurve(resp,score_svm(:,mdlSVM.ClassNames),'true');
-pred = trainingdata(:,1:2);
 
-for i = 1:200
-    if names(i,1) == 'm'
-        resp(i,1) = 1
-    else resp(i,1) = 0
-    end
-end
-
-SVMModel_2 = fitPosterior(SVMModel_2);
-SVMModel_1 = fitPosterior(SVMModel_1);
-[~,scores2] = resubPredict(SVMModel_2);
-[~,scores1] = resubPredict(SVMModel_1);
-[x1,y1,~,auc1] = perfcurve(names,scores1(:,2),1);
-[x2,y2,~,auc2] = perfcurve(resp,scores2(:,2),1);
+% pred = trainingdata(:,1:2);
+% 
+% for i = 1:200
+%     if names(i,1) == 'm'
+%         resp(i,1) = 1
+%     else resp(i,1) = 0
+%     end
+% end
+% 
+% SVMModel_2 = fitPosterior(SVMModel_2);
+% SVMModel_1 = fitPosterior(SVMModel_1);
+% [~,scores2] = resubPredict(SVMModel_2);
+% [~,scores1] = resubPredict(SVMModel_1);
+% [x1,y1,~,auc1] = perfcurve(names,scores1(:,2),1);
+% [x2,y2,~,auc2] = perfcurve(resp,scores2(:,2),1);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% PROCRUSTES ANALYSIS
@@ -1013,3 +1014,22 @@ patch('Vertices',dia_endo_new_shape_min,'Faces',data(1).diastolic.endo.tri,'Face
 
 disp('finished shape modeling')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% SUPPORT VECTOR MACHINES - PDM 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%7
+% ??? should I classify in terms of eigenvalue of each case (found by doing PCA on each case) or by b values,
+%    calculated by b = (shape - meanshape)*eigenvectors' ??????????????????
+trainingdata(:,1) = [DETERMINE_b_1 ; MESA_b_1]; %!!! How to find these variables??? !!!
+trainingdata(:,2) = [DETERMINE_b_2 ; MESA_b_2];
+names = char(200,1);
+names(1:100,1) = 'd'; 
+names(101:200,1) = 'm';
+
+
+% svmtrain will be removed from later versions of matlab.
+% svmStruct = svmtrain(trainingdata,names,'ShowPlot', true);
+
+% SVMModel = fitcsvm(trainingdata, group, 'Standardize', true)
+SVMModel = fitcsvm(trainingdata, names, 'KernelFunction', 'linear' )
+% cross-validation of the SVM
+CVSVMModel = crossval(SVMModel);
+misclassification_rate = kfoldLoss(CVSVMModel)
