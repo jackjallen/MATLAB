@@ -860,12 +860,12 @@ disp('start shape modeling')
 %% PCA
 % see Cootes tutorial: http://personalpages.manchester.ac.uk/staff/timothy.f.cootes/Models/app_models.pdf
 
-% 
-%     coeff = pca(data(1).diastolic.endo.xyz)
+% %built in matlab method for PCA
+% coeff = pca(data(1).diastolic.endo.xyz)
 % figure
 % hold on
-%     plot3(data(1).diastolic.endo.xyz(:,1), data(1).diastolic.endo.xyz(:,2), data(1).diastolic.endo.xyz(:,3),'o'); 
-%     plot3(coeff(:,1),coeff(:,2),coeff(:,3))
+% plot3(data(1).diastolic.endo.xyz(:,1), data(1).diastolic.endo.xyz(:,2), data(1).diastolic.endo.xyz(:,3),'o'); 
+% plot3(coeff(:,1),coeff(:,2),coeff(:,3))
 
 %% find mean shape and then use it to find the covariance matrix
 disp('started calculating covariance and mean shape')
@@ -876,9 +876,7 @@ disp('finished calculating covariance and mean shape')
 disp('started calculating eigenvectors of covariance matrix')
 [dia_endo_eigenvectors, dia_endo_eigenvalues] = eig(dia_endo_covariance_matrix);
 [sys_endo_eigenvectors, sys_endo_eigenvalues] = eig(sys_endo_covariance_matrix);
-
-%full shape (endo and epi)
-[sys_myo_eigenvectors, sys_myo_eigenvalues] = eig(sys_myo_covariance_matrix);
+[sys_myo_eigenvectors, sys_myo_eigenvalues] = eig(sys_myo_covariance_matrix); %full shape (endo and epi)
 
 %************how do I plot these eigenvectors?...*********
 %****should I find covariance of x, y and z seperately?...************
@@ -897,80 +895,29 @@ sorted_sys_endo_eigenvalues = sort(sys_endo_eigenvalues(:),'descend');
 sorted_sys_myo_eigenvalues = sort(sys_myo_eigenvalues(:),'descend');
 %% find the positions of the greatest eigenvalues
 % find the indices of the principle eigenvalue
-[dia_endo_rows, dia_endo_cols] = find((dia_endo_eigenvalues)/max(max(dia_endo_eigenvalues))>=(1));
-[sys_endo_rows, sys_endo_cols] = find((sys_endo_eigenvalues)/max(max(sys_endo_eigenvalues))>=(1));
-[sys_myo_rows, sys_myo_cols] = find((sys_myo_eigenvalues)/max(max(sys_myo_eigenvalues))>=(1));
+number_of_eigenvalues = 1; % If we use 1, this is just the principle component
+dia_endo_principle_eigenvalues = sorted_dia_endo_eigenvalues(1,1:number_of_eigenvalues);
+sys_endo_principle_eigenvalues = sorted_sys_endo_eigenvalues(1,1:number_of_eigenvalues);
+sys_myo_principle_eigenvalues = sorted_sys_myo_eigenvalues(1,1:number_of_eigenvalues);
+[dia_endo_rows, dia_endo_cols] = find(dia_endo_eigenvalues(dia_endo_principle_eigenvalues));
+[sys_endo_rows, sys_endo_cols] = find(sys_endo_eigenvalues(sys_endo_principle_eigenvalues));
+[sys_myo_rows, sys_myo_cols] = find(sys_myo_eigenvalues(sys_endo_principle_eigenvalues));
+ 
 %select eigenvectors with greatest eigenvalues
-% dia_endo_eigenvectors(:,1:(cols(1,1)-1)) = 0;
-dia_endo_principle_eigenvector = dia_endo_eigenvectors(:,dia_endo_cols);
-sys_endo_principle_eigenvector = sys_endo_eigenvectors(:,sys_endo_cols);
-sys_myo_principle_eigenvector = sys_myo_eigenvectors(:,sys_myo_cols);
-% dia_endo_eigenvectors_sum = zeros(size(dia_endo_eigenvectors,2),1);
-% for i = size(dia_endo_eigenvectors,2)
-%     dia_endo_eigenvectors_sum = dia_endo_eigenvectors(:,i) + dia_endo_eigenvectors_sum ;
-% end
+dia_endo_principle_eigenvectors = dia_endo_eigenvectors(:,dia_endo_cols);
+sys_endo_principle_eigenvectors = sys_endo_eigenvectors(:,sys_endo_cols);
+sys_myo_principle_eigenvectors = sys_myo_eigenvectors(:,sys_myo_cols);
 
-%% Using +/- 3*sqrt(eigenvector) as b
+%% Find b values - using +/- 3*sqrt(eigenvalue) as b
+% systolic, endocardium
+dia_endo_min_b = - 3*sqrt(dia_endo_principle_eigenvalues);
+dia_endo_max_b = 3*sqrt(dia_endo_principle_eigenvalues);
+sys_endo_min_b = - 3*sqrt(sys_endo_principle_eigenvalues);
+sys_endo_max_b = 3*sqrt(sys_endo_principle_eigenvalues);
+sys_myo_min_b = - 3*sqrt(sys_myo_principle_eigenvalues);
+sys_myo_max_b = 3*sqrt(sys_myo_principle_eigenvalues);
 
-%systolic, endocardium
-% sys_endo_min_b = - 3*sqrt(sqrt((sys_endo_principle_eigenvector).^2));
-% sys_endo_max_b = 3*sqrt(sqrt((sys_endo_principle_eigenvector).^2));
-sys_endo_min_b = - 3*sqrt(sys_endo_principle_eigenvector);
-sys_endo_max_b = 3*sqrt(sys_endo_principle_eigenvector);
-sys_endo_new_shape_1min = reshape(sys_endo_mean_shape + sys_endo_principle_eigenvector.*sys_endo_min_b, [1089 3]);
-sys_endo_new_shape_1max = reshape(sys_endo_mean_shape + sys_endo_principle_eigenvector.*sys_endo_max_b, [1089 3]);
-sys_endo_mean_shape = reshape(sys_endo_mean_shape, [1089 3]);
-figure
-title 'PCA - first eigenmode - systolic endocardium'
-hold on
-plot3(sys_endo_mean_shape(:,1),sys_endo_mean_shape(:,2),sys_endo_mean_shape(:,3),'g.')
-plot3(sys_endo_new_shape_1max(:,1),sys_endo_new_shape_1max(:,2),sys_endo_new_shape_1max(:,3),'ro')
-plot3(sys_endo_new_shape_1min(:,1),sys_endo_new_shape_1min(:,2),sys_endo_new_shape_1min(:,3),'bo')
-legend 'mean' 'max b' 'min b'
-
-% %systolic, epicardium
-% sys_epi_min_b = - 3*sqrt(sqrt((sys_epi_principle_eigenvector).^2));
-% sys_epi_max_b = 3*sqrt(sqrt((sys_epi_principle_eigenvector).^2));
-% sys_epi_new_shape_1min = reshape(sys_epi_mean_shape + sys_epi_principle_eigenvector.*sys_epi_min_b, [1089 3]);
-% sys_epi_new_shape_1max = reshape(sys_epi_mean_shape + sys_epi_principle_eigenvector.*sys_epi_max_b, [1089 3]);
-% sys_epi_mean_shape = reshape(sys_epi_mean_shape, [1089 3]);
-% figure
-% title 'PCA - first eigenmode - systolic endocardium'
-% hold on
-% plot3(sys_epi_mean_shape(:,1),sys_epi_mean_shape(:,2),sys_epi_mean_shape(:,3),'g.')
-% plot3(sys_epi_new_shape_1max(:,1),sys_epi_new_shape_1max(:,2),sys_epi_new_shape_1max(:,3),'ro')
-% plot3(sys_epi_new_shape_1min(:,1),sys_epi_new_shape_1min(:,2),sys_epi_new_shape_1min(:,3),'bo')
-% legend 'mean' 'max b' 'min b'
-
-%diastolic, endocardium
-dia_endo_min_b = - 3*sqrt(dia_endo_principle_eigenvector);
-dia_endo_max_b = 3*sqrt(dia_endo_principle_eigenvector);
-dia_endo_new_shape_1min = reshape(dia_endo_mean_shape + dia_endo_principle_eigenvector.*dia_endo_min_b, [1089 3]);
-dia_endo_new_shape_1max = reshape(dia_endo_mean_shape + dia_endo_principle_eigenvector.*dia_endo_max_b, [1089 3]);
-dia_endo_mean_shape = reshape(dia_endo_mean_shape, [1089 3]);
-figure
-title 'PCA - first eigenmode - diastolic endocardium'
-hold on
-plot3(dia_endo_mean_shape(:,1),dia_endo_mean_shape(:,2),dia_endo_mean_shape(:,3),'g.')
-plot3(dia_endo_new_shape_1max(:,1),dia_endo_new_shape_1max(:,2),dia_endo_new_shape_1max(:,3),'ro')
-plot3(dia_endo_new_shape_1min(:,1),dia_endo_new_shape_1min(:,2),dia_endo_new_shape_1min(:,3),'bo')
-legend 'mean' 'max b' 'min b'
-
-%myocardium
-sys_myo_min_b = - 3*sqrt(sys_myo_principle_eigenvector);
-sys_myo_max_b = 3*sqrt(sys_myo_principle_eigenvector);
-sys_myo_new_shape_1min = reshape(sys_myo_mean_shape + sys_myo_principle_eigenvector.*sys_myo_min_b, [2178 3]);
-sys_myo_new_shape_1max = reshape(sys_myo_mean_shape + sys_myo_principle_eigenvector.*sys_myo_max_b, [2178 3]);
-sys_myo_mean_shape = reshape(sys_myo_mean_shape, [2178 3]);
-figure
-title 'PCA - first eigenmode - systolic myocardium'
-hold on
-plot3(sys_myo_mean_shape(:,1),sys_myo_mean_shape(:,2),sys_myo_mean_shape(:,3),'g.')
-plot3(sys_myo_new_shape_1max(:,1),sys_myo_new_shape_1max(:,2),sys_myo_new_shape_1max(:,3),'ro')
-plot3(sys_myo_new_shape_1min(:,1),sys_myo_new_shape_1min(:,2),sys_myo_new_shape_1min(:,3),'bo')
-legend 'mean' 'max b' 'min b'
-
- %% finding b by analysing each of the training shapes
+%% (finding b by analysing each of the training shapes)
 % for i = 1:400
 %     dia_endo_b(i) = (dia_endo_principle_eigenvectors')*(data(i).diastolic.endo.xyz(:) - dia_endo_mean_shape);
 %     sys_endo_b(i) = (sys_endo_principle_eigenvectors')*(data(i).systolic.endo.xyz(:) - sys_endo_mean_shape);
@@ -991,92 +938,78 @@ legend 'mean' 'max b' 'min b'
 % sys_endo_max_b = std(sys_endo_b);
 % sys_endo_min_b = -std(sys_endo_b);
 
-%% visualise eigenmodes of shape variation
-sys_endo_new_shape_1min = reshape(sys_endo_mean_shape + sys_endo_principle_eigenvector.*sys_endo_min_b, [1089 3]);
-sys_endo_new_shape_1max = reshape(sys_endo_mean_shape + sys_endo_principle_eigenvector.*sys_endo_max_b, [1089 3]);
+%% Calculate new shapes
+% mean shape + the sum of each eigenvector times it's value of b
+% !!!!!!!!!!!!!!!!!!check that this does what it is meant to...!!!!!!!
+%set of the principle eigenvectors to use (eigenvalue_range)
+%(can equal the number_of_eigenvectors already extracted, or we can vary it for plotting)
+eigenvalue_range = 1:number_of_eigenvalues; 
+dia_endo_new_shape_min = dia_endo_mean_shape + dia_endo_principle_eigenvectors(1,eigenvalue_range).*dia_endo_min_b(1,eigenvalue_range);
+dia_endo_new_shape_max = dia_endo_mean_shape + dia_endo_principle_eigenvectors(1,eigenvalue_range).*dia_endo_max_b(1,eigenvalue_range);
+sys_endo_new_shape_min = sys_endo_mean_shape + sys_endo_principle_eigenvectors(1,eigenvalue_range).*sys_endo_min_b(1,eigenvalue_range);
+sys_endo_new_shape_max = sys_endo_mean_shape + sys_endo_principle_eigenvectors(1,eigenvalue_range).*sys_endo_max_b(1,eigenvalue_range);
+sys_myo_new_shape_min = sys_myo_mean_shape + sys_myo_principle_eigenvectors(1,eigenvalue_range).*sys_myo_min_b(1,eigenvalue_range);
+sys_myo_new_shape_max = sys_myo_mean_shape + sys_myo_principle_eigenvectors(1,eigenvalue_range).*sys_myo_max_b(1,eigenvalue_range);
+
+%% visualise eigenmodes of shape variation - points
+dia_endo_new_shape_min = reshape(dia_endo_new_shape_min, [1089 3]);
+dia_endo_new_shape_max = reshape(dia_endo_new_shape_max, [1089 3]);
+dia_endo_mean_shape = reshape(dia_endo_mean_shape, [1089 3]);
+sys_endo_new_shape_min = reshape(sys_endo_new_shape_min, [1089 3]);
+sys_endo_new_shape_max = reshape(sys_endo_new_shape_max, [1089 3]);
 sys_endo_mean_shape = reshape(sys_endo_mean_shape, [1089 3]);
-figure 
+sys_myo_new_shape_min = reshape(sys_myo_new_shape_min, [1089 3]);
+sys_myo_new_shape_max = reshape(sys_myo_new_shape_max, [1089 3]);
+sys_myo_mean_shape = reshape(sys_myo_mean_shape, [1089 3]);
+figure
+title 'PCA - eigenmode visualisation - diastolic endocardium'
 hold on
-plot3(sys_endo_mean_shape(:,1),sys_endo_mean_shape(:,2),sys_endo_mean_shape(:,3),'g.')
-plot3(sys_endo_new_shape_1max(:,1),sys_endo_new_shape_1max(:,2),sys_endo_new_shape_1max(:,3),'ro')
-plot3(sys_endo_new_shape_1min(:,1),sys_endo_new_shape_1min(:,2),sys_endo_new_shape_1min(:,3),'bo')
-title 'sys endo eigenmode variation'
+plot3(dia_endo_mean_shape(:,1),dia_endo_mean_shape(:,2),dia_endo_mean_shape(:,3),'g.')
+plot3(dia_endo_new_shape_max(:,1),dia_endo_new_shape_max(:,2),dia_endo_new_shape_max(:,3),'ro')
+plot3(dia_endo_new_shape_min(:,1),dia_endo_new_shape_min(:,2),dia_endo_new_shape_min(:,3),'bo')
 legend 'mean' 'max b' 'min b'
 
 figure
-patch('Vertices',sys_endo_new_shape_1max,'Faces',data(1).systolic.endo.tri,'FaceColor','red')
-figure
-patch('Vertices',sys_endo_new_shape_1min,'Faces',data(1).systolic.endo.tri,'FaceColor','blue')
+title 'PCA - eigenmode visualisation - systolic endocardium'
+hold on
+plot3(sys_endo_mean_shape(:,1),sys_endo_mean_shape(:,2),sys_endo_mean_shape(:,3),'g.')
+plot3(sys_endo_new_shape_max(:,1),sys_endo_new_shape_max(:,2),sys_endo_new_shape_max(:,3),'ro')
+plot3(sys_endo_new_shape_min(:,1),sys_endo_new_shape_min(:,2),sys_endo_new_shape_min(:,3),'bo')
+legend 'mean' 'max b' 'min b'
 
-dia_endo_new_shape_1min = reshape(dia_endo_mean_shape + dia_endo_principle_eigenvector.*dia_endo_min_b, [1089 3]);
-dia_endo_new_shape_1max = reshape(dia_endo_mean_shape + dia_endo_principle_eigenvector.*dia_endo_max_b, [1089 3]);
+figure
+title 'PCA - eigenmode visualisation - systolic myocardium'
+hold on
+plot3(sys_myo_mean_shape(:,1),sys_myo_mean_shape(:,2),sys_myo_mean_shape(:,3),'g.')
+plot3(sys_myo_shape_max(:,1),sys_myo_new_shape_max(:,2),sys_myo_new_shape_max(:,3),'ro')
+plot3(sys_myo_new_shape_min(:,1),sys_myo_new_shape_min(:,2),sys_myo_new_shape_min(:,3),'bo')
+legend 'mean' 'max b' 'min b'
+
+%% visualise eigenmodes of shape variation - meshes
+figure
+patch('Vertices',sys_endo_new_shape_max,'Faces',data(1).systolic.endo.tri,'FaceColor','red')
+figure
+patch('Vertices',sys_endo_new_shape_min,'Faces',data(1).systolic.endo.tri,'FaceColor','blue')
+
+dia_endo_new_shape_min = reshape(dia_endo_mean_shape + dia_endo_principle_eigenvector.*dia_endo_min_b, [1089 3]);
+dia_endo_new_shape_max = reshape(dia_endo_mean_shape + dia_endo_principle_eigenvector.*dia_endo_max_b, [1089 3]);
 dia_endo_mean_shape = reshape(dia_endo_mean_shape, [1089 3]);
 figure 
 hold on
 plot3(dia_endo_mean_shape(:,1),dia_endo_mean_shape(:,2),dia_endo_mean_shape(:,3),'g.')
-plot3(dia_endo_new_shape_1max(:,1),dia_endo_new_shape_1max(:,2),dia_endo_new_shape_1max(:,3),'ro')
-plot3(dia_endo_new_shape_1min(:,1),dia_endo_new_shape_1min(:,2),dia_endo_new_shape_1min(:,3),'bo')
+plot3(dia_endo_new_shape_max(:,1),dia_endo_new_shape_max(:,2),dia_endo_new_shape_max(:,3),'ro')
+plot3(dia_endo_new_shape_min(:,1),dia_endo_new_shape_min(:,2),dia_endo_new_shape_min(:,3),'bo')
 title 'dia endo eigenmode variation'
 legend 'mean' 'max b' 'min b'
 
 figure
-patch('Vertices',dia_endo_new_shape_1max,'Faces',data(1).diastolic.endo.tri,'FaceColor','red')
+patch('Vertices',dia_endo_new_shape_max,'Faces',data(1).diastolic.endo.tri,'FaceColor','red')
 figure
-patch('Vertices',dia_endo_new_shape_1min,'Faces',data(1).diastolic.endo.tri,'FaceColor','blue')
-
+patch('Vertices',dia_endo_new_shape_min,'Faces',data(1).diastolic.endo.tri,'FaceColor','blue')
+ 
 % ICA
 %[icaOut] = fastica(dia_endo_covariance_matrix)
 
 
 disp('finished shape modeling')
-%% Shape modelling - visualisation of new shape
-hold on
-plot3(dia_endo_new_shape(:,1),dia_endo_new_shape(:,2), dia_endo_new_shape(:,3),'.')
-sys_endo_mean_shape = reshape(sys_endo_mean_shape, size(data(1).diastolic.endo.xyz));
-plot3(sys_endo_mean_shape(:,1),sys_endo_mean_shape(:,2), sys_endo_mean_shape(:,3),'+')
-
-%%
-% phi = dia_endo_eigenvectors';
-% phi = (sortrows(phi))';
-
-%reverse the eigenvalue matrix
-dia_endo_eigenvalues = dia_endo_eigenvalues(end:-1:1);
-% reverse the columns
-dia_endo_eigenvectors = dia_endo_eigenvectors(:,end:-1:1); 
-dia_endo_eigenvectors=dia_endo_eigenvectors';
-
-% model parameters 'b'
-
-%phi = dia_endo_eigenvectors(:);
-
-% select some of the largest eigenvalues
-%eigenvalue_indices = find(phi>0.6, 20);
-%phi(eigenvalue_indices);
-
-% sortedPhi = sort(phi, 'descend');
-% phi = reshape((sortedPhi.'), size(dia_endo_covariance_matrix)); %each column shows an eigenvetor
-
-% %coeff = pca(covariance_matrix)
-
-% calculate new shapes, using different parameters b
-%!!!!!!!!!!!WHAT VALUES SHOULD 'b' BE?
-% new_shape = mean_shape + (phi)*(b);
-%%
-% for i = 1:size(dia_endo_eigenvectors,2)
-% b(1,i) = (dia_endo_eigenvectors(:,i).')*(data(1).diastolic.endo.xyz(:) - dia_endo_mean_shape); %transpose phi
-% end
-
-%%
-for i = 1:400
-b(1,i) = (dia_endo_eigenvectors(:,i)')*(data(1).diastolic.endo.xyz(:) - sys_endo_mean_shape); %transpose phi
-end
-%%
-% plot in pca space... not sure if this is correct...
-for i = 1:400
-pc1 = eigenvectors * data(i).diastolic.endo.xyz;
-% pc2 = eigenvectors * transformed_data(i).systolic.endo.xyz;
-hold on
-plot(pc1(1,:),pc1(2,:),'o');
-% plot(pc2(1,:),pc2(2,:),'.');
-
-end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
