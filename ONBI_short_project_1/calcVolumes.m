@@ -1,4 +1,4 @@
-function [sys_epi_volumes, sys_endo_volumes, dia_epi_volumes, dia_endo_volumes, data] = calcVolumes(data)
+function [data, sys_epi_volumes, sys_endo_volumes, dia_epi_volumes, dia_endo_volumes] = calcVolumes(data)
 
 % Function to calculate the volumes and centers of mass of the different
 % areas of the LV.
@@ -11,9 +11,10 @@ function [sys_epi_volumes, sys_endo_volumes, dia_epi_volumes, dia_endo_volumes, 
 %%
 % vtkCleanPolyData(EPI_ED) (JA:function provided by Ernesto)fix the possible replicated nodes and spurious
 % edges
-for i = 1:400 
+for i = 1:401 %ignore 401. The data from SMM0401 has been used in SMM0002 
 %calculate the hole edge line coordinates xyz B for all patients
 %diastolic, endo
+case_number = i;
 data(i).diastolic.endo.xyz = reshape(data(i).diastolic.endo.xyz, [1089, 3] );
 data(i).diastolic.epi.xyz = reshape(data(i).diastolic.epi.xyz, [1089, 3] );
 data(i).systolic.endo.xyz = reshape(data(i).systolic.endo.xyz, [1089, 3] );
@@ -114,7 +115,7 @@ data(i).diastolic.endo.differencevolume = prod(diff( BBMesh( data(i).diastolic.e
 % dia_epi_diff_volumes(i,1) = data(i).diastolic.epi.differencevolume;
 % dia_endo_diff_volumes(i,1) = data(i).diastolic.endo.differencevolume;
 
-%store the volumes in vectors
+% store the volumes in vectors
 sys_epi_volumes(i,1) = data(i).systolic.epi.volume;
 sys_endo_volumes(i,1) = data(i).systolic.endo.volume;
 dia_epi_volumes(i,1) = data(i).diastolic.epi.volume;
