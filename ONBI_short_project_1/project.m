@@ -113,27 +113,16 @@ disp('starting procrustes analysis')
 %store dimensions of the shapes
 [shape_nRows , shape_nCols] = size(data(2).diastolic.endo.xyz);
 
-%use the initial data clouds as references (individual)
-initial_reference_id = 2
+%use the initial data clouds as references
+initial_reference_id = 401; %sets which case will be the initial reference
+
 dia_endo_reference = data(initial_reference_id).diastolic.endo.xyz;
 dia_epi_reference = data(initial_reference_id).diastolic.epi.xyz;
 sys_endo_reference = data(initial_reference_id).systolic.endo.xyz;
 sys_epi_reference = data(initial_reference_id).systolic.epi.xyz;
-%make a reference from the endo and epi surfaces (concatenate)
-dia_myo_reference = [dia_endo_reference(:) ; dia_epi_reference(:)];
-sys_myo_reference = [sys_endo_reference(:)  ; sys_epi_reference(:)];
 
-dia_myo_reference = reshape(dia_myo_reference, [2*1089 3]);
-sys_myo_reference = reshape(sys_myo_reference, [2*1089 3]);
-% %initialise the sums of the shapes as zero
-% dia_endo_sum = zeros(size(dia_endo_reference));
-% dia_epi_sum = zeros(size(dia_epi_reference));
-% sys_endo_sum = zeros(size(sys_endo_reference));
-% sys_epi_sum = zeros(size(sys_epi_reference));
-% (whole shape)
-dia_myo_sum = zeros(size(dia_myo_reference));
-sys_myo_sum = zeros(size(sys_myo_reference));
-
+dia_myo_reference = reshape([dia_endo_reference(:) ; dia_epi_reference(:)], [2*1089 3]);
+sys_myo_reference = reshape([sys_endo_reference(:)  ; sys_epi_reference(:)], [2*1089 3]);
 
 % Think of endo and epi as one shape (concatenate).
 for i = 1:401 %SMM001 has already been replaced by SMM401 in the script
@@ -141,101 +130,19 @@ data(i).diastolic.myo.xyz = [data(i).diastolic.endo.xyz ; data(i).diastolic.epi.
 data(i).systolic.myo.xyz = [data(i).systolic.endo.xyz ; data(i).systolic.epi.xyz];
 end
 
-% MESA_indicesEDIT = [MESA_indices(1);MESA_indices(3:end)];
-concatIndices = [data(1).MESA_indices ; data(1).DETERMINE_indices];
 %p = number of times procrustes is performed.
-for p = 1:3
-procrustes_iteration = p
-% iterate so that procrustes is performed on each case (400 patients).
-for i = 1:400
-procrustes_case = i
-%     for d = 1:find(concatIndices'==i)
-% % transform endo and epi (individually)
-% [data(i).diastolic.endo.procrustes_d, data(i).diastolic.endo.xyz] = procrustes(dia_endo_reference, data(i).diastolic.endo.xyz(:));
-% [data(i).diastolic.epi.procrustes_d, data(i).diastolic.epi.xyz] = procrustes(dia_epi_reference, data(i).diastolic.epi.xyz(:));
-% [data(i).systolic.endo.procrustes_d, data(i).systolic.endo.xyz] = procrustes(sys_endo_reference, data(i).systolic.endo.xyz(:));
-% [data(i).systolic.epi.procrustes_d, data(i).systolic.epi.xyz] = procrustes(sys_epi_reference, data(i).systolic.epi.xyz(:));
+[data, dia_myo_mean, sys_myo_mean, MESA_diastolic_myo_shapes, DETERMINE_systolic_myo_shapes ] = calcProcrustes(data, 3, dia_myo_reference, sys_myo_reference);
 
-% transform endo and epi as one shape vector
-[data(i).diastolic.myo.procrustes_d, diastolic_myo_shapes(i).xyz, dia_myo_transform(i)] = procrustes(dia_myo_reference, data(i).diastolic.myo.xyz,'scaling',false,'reflection',false);
-[data(i).systolic.myo.procrustes_d, systolic_myo_shapes(i).xyz, sys_myo_transform(i)] = procrustes(sys_myo_reference, data(i).systolic.myo.xyz,'scaling',false,'reflection',false); %,'scaling',false); % with scaling SMM0362 goes much smaller than the others...
-
-all_diastolic_myo_shapes(i,:) = diastolic_myo_shapes(i).xyz(:);
-all_systolic_myo_shapes(i,:) = systolic_myo_shapes(i).xyz(:);
-
-%sums for finding new means later on
-% dia_endo_sum = data(i).diastolic.endo.xyz + dia_endo_sum;
-% dia_epi_sum = data(i).diastolic.epi.xyz + dia_epi_sum;
-% sys_endo_sum = data(i).systolic.endo.xyz + sys_endo_sum;
-% sys_epi_sum = data(i).systolic.epi.xyz + sys_epi_sum;
-
-% dia_myo_sum = data(i).diastolic.myo.xyz + dia_myo_sum;
-% sys_myo_sum = data(i).systolic.myo.xyz + sys_myo_sum;
-%      end
-end
-
-%calculate means
-% dia_endo_mean = dia_endo_sum/400;
-% dia_epi_mean = dia_epi_sum/400;
-% sys_endo_mean = sys_endo_sum/400;
-% sys_epi_mean = sys_epi_sum/400;
-dia_myo_mean = diastolic_myo_shapes(1).xyz;
-sys_myo_mean = systolic_myo_shapes(1).xyz;
-
-for iS = 2:size(diastolic_myo_shapes,2)
-    dia_myo_mean = dia_myo_mean + diastolic_myo_shapes(iS).xyz;
-    sys_myo_mean = sys_myo_mean + systolic_myo_shapes(iS).xyz;
-end
-
-dia_myo_mean = dia_myo_mean./(size(diastolic_myo_shapes,2)-1);
-
-sys_myo_mean = sys_myo_mean./(size(systolic_myo_shapes,2)-1);
-
-%set means as the references for next round of procrustes
-% dia_endo_reference = dia_endo_mean;
-% dia_epi_reference = dia_epi_mean;
-% sys_endo_reference = sys_endo_mean;
-% sys_epi_reference = sys_epi_mean;
-dia_myo_reference(i) = dia_myo_mean(i); 
-sys_myo_reference(i) = sys_myo_mean(i);
-
-
-end
-
-
-% % reshape from vector to matrix.
-% % individual endo and epi shapes.
+% % reshape individual endo and epi shapes.
 % dia_endo_mean = reshape(dia_endo_mean,size(data(1).diastolic.endo.xyz));
 % dia_epi_mean = reshape(dia_epi_mean,size(data(1).diastolic.endo.xyz));
 % sys_endo_mean = reshape(sys_endo_mean,size(data(1).diastolic.endo.xyz));
 % sys_epi_mean = reshape(sys_epi_mean,size(data(1).diastolic.endo.xyz));
-dia_myo_reference = reshape(dia_myo_reference, [2*shape_nRows, shape_nCols]);
-sys_myo_reference = reshape(sys_myo_reference, [2*shape_nRows, shape_nCols]);
+dia_myo_reference = reshape(dia_myo_mean, [2*shape_nRows, shape_nCols]);
+sys_myo_reference = reshape(sys_myo_mean, [2*shape_nRows, shape_nCols]);
 
-% % concatenated endo and epi shapes.
-% % split the long vectors into vectors that represent the endo and epi
-% % shapes then reshape the resulting vectors to matrix form.
-for i = 1:400
-    
+[data] = extractEndoEpi(data, shape_nRows);
 
-% d = find(concatIndices'==i);
-
-% i
-% reshape myo shapes from vector to matrix
-% data(i).diastolic.myo.xyz = reshape(data(i).diastolic.myo.xyz,[2*shape_nRows, shape_nCols]);
-% data(i).systolic.myo.xyz = reshape(data(i).systolic.myo.xyz,[2*shape_nRows, shape_nCols]);
-
-% diastolic_myo_reshaped(i).xyz = reshape(diastolic_myo_shapes(:,i),size(dia_myo_reference));
-% systolic_myo_reshaped(i).xyz = reshape(systolic_myo_shapes(:,i),size(sys_myo_reference));
-
-
-% extract endo and epi shapes from full shape matrices (data(i).diastolic.myo.xyz)
-data(i).diastolic.endo.xyz = data(i).diastolic.myo.xyz(1:shape_nRows, :);
-data(i).diastolic.epi.xyz = data(i).diastolic.myo.xyz(shape_nRows+1:2*shape_nRows, :);
-data(i).systolic.endo.xyz = data(i).systolic.myo.xyz(1:shape_nRows, :);
-data(i).systolic.epi.xyz = data(i).systolic.myo.xyz(shape_nRows+1:2*shape_nRows, :);
-
-end
 disp('finished procrustes analysis')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -246,15 +153,16 @@ disp('start shape modeling')
 % see Cootes tutorial for help: http://personalpages.manchester.ac.uk/staff/timothy.f.cootes/Models/app_models.pdf
 
 % do PCA on MESA and DETERMINE cases only
-for i = 1:400
+nCases = 401;
+for i = 1:nCases 
     for d = 1:size(data(1).DETERMINE_indices,1)
         if data(1).DETERMINE_indices(d)==i
-            DETERMINE_diastolic_myo_shapes(d,:) = all_diastolic_myo_shapes(i,:);
-            DETERMINE_systolic_myo_shapes(d,:) = all_systolic_myo_shapes(i,:);
+            DETERMINE_diastolic_myo_shapes(d,:) = all_diastolic_myo_shapes(d,:);
+            DETERMINE_systolic_myo_shapes(d,:) = all_systolic_myo_shapes(d,:);
         end
         if data(1).MESA_indices(d)==i
-            MESA_diastolic_myo_shapes(d,:) = all_diastolic_myo_shapes(i,:);
-            MESA_systolic_myo_shapes(d,:) = all_systolic_myo_shapes(i,:);
+            MESA_diastolic_myo_shapes(d,:) = all_diastolic_myo_shapes(d,:);
+            MESA_systolic_myo_shapes(d,:) = all_systolic_myo_shapes(d,:);
         
         end
     end
@@ -323,6 +231,8 @@ dia_myo_new_shape_min(:,n) = dia_myo_mean(:) + principle_dia_myo_eigenvectors(:,
 dia_myo_new_shape_max(:,n) = dia_myo_mean(:) + principle_dia_myo_eigenvectors(:,n)*dia_myo_max_b(n,1);
 
 end
+
+disp('finished PCA')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Point distribution model (PDM)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%7
@@ -353,7 +263,7 @@ for b = 1:5
 end
 
 %% visualise b values - histograms
-b = 1
+b = 5;
 figure
 nbins = 30;
 hold on
@@ -362,11 +272,11 @@ histogram(MESA_sys_myo_b(:,b), nbins)
 hold off
 
 % visualise b values - 2D plot
-b = 1:2;
+b = [ 2;5 ] ;
 figure
 hold on
-xlabel 'b2'
-ylabel 'b4'
+xlabel 'b1'
+ylabel 'b2'
 plot(DETERMINE_sys_myo_b(:,b(1)), DETERMINE_sys_myo_b(:,b(2)), 'o')
 plot(MESA_sys_myo_b(:,b(1)), MESA_sys_myo_b(:,b(2)), 'o')
 hold off
@@ -385,22 +295,29 @@ hold off
 %% SVM
 % set training data
 trainingdata(:,1:5) = [DETERMINE_sys_myo_b(:,1:5) ; MESA_sys_myo_b(:,1:5)]; %from the PDM
-trainingdata(:,6) = [DETERMINE_EF ; MESA_EF];
+% trainingdata(:,6) = [DETERMINE_EF ; MESA_EF];
 names = char(200,1);
 % names(1:100,1) = 'd'; 
 % names(101:199,1) = 'm';
 names(1:100,1) = 1; 
 names(101:200,1) = 2;
 
-% svmtrain (will be removed from later versions of matlab)
-svmStruct = svmtrain(trainingdata(:,1:2),names,'ShowPlot', true, 'kernel_function', 'linear');
 
-% SVMModel = fitcsvm(trainingdata, group, 'Standardize', true)
-SVMModel = fitcsvm(trainingdata(:,:), names, 'KernelFunction', 'linear' );
-% cross-validation of the SVM
-CVSVMModel = crossval(SVMModel);
-misclassification_rate = kfoldLoss(CVSVMModel);
-classification_rate = 1 - misclassification_rate
+% svmtrain (will be removed from later versions of matlab)
+svmStruct = svmtrain(trainingdata(:,[1;2]),names,'ShowPlot', true, 'kernel_function', 'linear');
+% 
+for param1 = 1:5
+    for param2 = 1:5
+        for param3 = 1:5
+            % SVMModel = fitcsvm(trainingdata, group, 'Standardize', true)
+            SVMModel = fitcsvm(trainingdata(:,[param1;param2;param3]), names, 'KernelFunction', 'linear' );
+            % cross-validation of the SVM
+            CVSVMModel = crossval(SVMModel);
+            misclassification_rate = kfoldLoss(CVSVMModel);
+            classification_rates(param1,param2,param3) = 1 - misclassification_rate
+        end
+    end
+end
 
 %% kmeans
 idx = kmeans(trainingdata(:,:),2);
