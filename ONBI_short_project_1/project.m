@@ -66,41 +66,54 @@ disp('calculating endo and epi volumes')
 
 disp('finished calculating endo and epi volumes')
 
+
 plotVolumes(data,sys_epi_volumes,sys_endo_volumes,dia_epi_volumes,dia_endo_volumes)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%  CALCULATE EJECTION FRACTION
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 disp('started calculating ejection fractions')
 
-[data] = calcEjectionFraction(data);
+[data, DETERMINE_strokeVolumes, DETERMINE_ejectionFractions,  MESA_strokeVolumes,  MESA_ejectionFractions] = calcEjectionFraction(data);
 
+plotEF(data)
 disp('finished calculating ejection fractions')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%  CALCULATE ACCURACIES 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+disp('started calculating accuracies')
 
-[data, accuracy, sensitivity, specificity] = calcAccuracy(data);
+[data, accuracy, sensitivity, specificity] = calcAccuracyEF(data);
 
 plotROC(sensitivity, specificity)
-plotAccuracy(accuracy)
+plotAccuracy(data, accuracy)
+
+
+disp('finished calculating accuracies')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% CALCULATE MESH AREAS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% calculate triangle side lengths
-%!!!!! NEED TO CORRECT THIS TO INCLUDE THE LIDS
+
 disp('started calculating triangular mesh areas and triangle side lengths')
 [data] = calcTriMeshAreas(data);
 disp('finished calculating triangular mesh areas and triangle side lengths')
-%% calculate total areas(heron's forumla)
-%!!!!! NEED TO CORRECT THIS TO INCLUDE THE LIDS
-% endo_area = calcTriMeshArea(endo_sides);
-% epi_area = calcTriMeshArea(epi_sides);
-% %% calculate coordinates of the centroids
-% %!!!!! NEED TO CORRECT THIS...ALREADY DONE BY 'calcVolume'?
-% endo_centroid = mean(endo);
-% epi_centroid = mean(epi);
-% 
 
+% calculate area to volume ratios
+[data] = calcAVR(data);
+
+figure
+hold on
+histogram(cell2mat({data(data(1).MESA_indices).MESA_sys_myo_AVratio}))
+histogram(cell2mat({data(data(1).DETERMINE_indices).DETERMINE_sys_myo_AVratio}))
+
+figure
+title 'systolic endocardium, surface area to volume ratio'
+hold on
+histogram(cell2mat({data(data(1).MESA_indices).MESA_sys_endo_AVratio}))
+histogram(cell2mat({data(data(1).DETERMINE_indices).DETERMINE_sys_endo_AVratio}))
+
+[data, accuracy, sensitivity, specificity] = calcAccuracyAVratio(data);
+plotROC(sensitivity, specificity)
+plotAccuracy(data, accuracy)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% GENERAL PROCRUSTES ANALYSIS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -111,27 +124,29 @@ disp('finished calculating triangular mesh areas and triangle side lengths')
 disp('starting procrustes analysis')
 
 %store dimensions of the shapes
-[shape_nRows , shape_nCols] = size(data(2).diastolic.endo.xyz);
+[shape_nRows , shape_nCols] = size(data(2).diastolic.endo.xyz(1:1089,:));
 
 %use the initial data clouds as references
 initial_reference_id = 401; %sets which case will be the initial reference
 
-dia_endo_reference = data(initial_reference_id).diastolic.endo.xyz;
-dia_epi_reference = data(initial_reference_id).diastolic.epi.xyz;
-sys_endo_reference = data(initial_reference_id).systolic.endo.xyz;
-sys_epi_reference = data(initial_reference_id).systolic.epi.xyz;
+%remove the B points (added in calcVolumes())
+dia_endo_reference = data(initial_reference_id).diastolic.endo.xyz(1:1089,:);
+dia_epi_reference = data(initial_reference_id).diastolic.epi.xyz(1:1089,:);
+sys_endo_reference = data(initial_reference_id).systolic.endo.xyz(1:1089,:);
+sys_epi_reference = data(initial_reference_id).systolic.epi.xyz(1:1089,:);
 
 dia_myo_reference = reshape([dia_endo_reference(:) ; dia_epi_reference(:)], [2*1089 3]);
 sys_myo_reference = reshape([sys_endo_reference(:)  ; sys_epi_reference(:)], [2*1089 3]);
 
 % Think of endo and epi as one shape (concatenate).
 for i = 1:401 %SMM001 has already been replaced by SMM401 in the script
-data(i).diastolic.myo.xyz = [data(i).diastolic.endo.xyz ; data(i).diastolic.epi.xyz];
-data(i).systolic.myo.xyz = [data(i).systolic.endo.xyz ; data(i).systolic.epi.xyz];
+data(i).diastolic.myo.xyz = [data(i).diastolic.endo.xyz(1:1089,:) ; data(i).diastolic.epi.xyz(1:1089,:)];
+data(i).systolic.myo.xyz = [data(i).systolic.endo.xyz(1:1089,:) ; data(i).systolic.epi.xyz(1:1089,:)];
 end
 
 %p = number of times procrustes is performed.
-[data, dia_myo_mean, sys_myo_mean, MESA_diastolic_myo_shapes, DETERMINE_systolic_myo_shapes ] = calcProcrustes(data, 3, dia_myo_reference, sys_myo_reference);
+procrustes_iterations = 3;
+[data, dia_myo_mean, sys_myo_mean, MESA_diastolic_myo_shapes, DETERMINE_systolic_myo_shapes, all_training_diastolic_myo_shapes, all_training_systolic_myo_shapes ] = calcProcrustes(data, procrustes_iterations, dia_myo_reference, sys_myo_reference);
 
 % % reshape individual endo and epi shapes.
 % dia_endo_mean = reshape(dia_endo_mean,size(data(1).diastolic.endo.xyz));
@@ -148,25 +163,29 @@ disp('finished procrustes analysis')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% SHAPE MODELING
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-disp('start shape modeling')
-%% PCA
-% see Cootes tutorial for help: http://personalpages.manchester.ac.uk/staff/timothy.f.cootes/Models/app_models.pdf
 
+% PCA
+% see Cootes tutorial for help: http://personalpages.manchester.ac.uk/staff/timothy.f.cootes/Models/app_models.pdf
+disp('started PCA')
 % do PCA on MESA and DETERMINE cases only
-nCases = 401;
-for i = 1:nCases 
-    for d = 1:size(data(1).DETERMINE_indices,1)
-        if data(1).DETERMINE_indices(d)==i
-            DETERMINE_diastolic_myo_shapes(d,:) = all_diastolic_myo_shapes(d,:);
-            DETERMINE_systolic_myo_shapes(d,:) = all_systolic_myo_shapes(d,:);
-        end
-        if data(1).MESA_indices(d)==i
-            MESA_diastolic_myo_shapes(d,:) = all_diastolic_myo_shapes(d,:);
-            MESA_systolic_myo_shapes(d,:) = all_systolic_myo_shapes(d,:);
-        
-        end
-    end
+% nCases = 401;
+% for i = 1:nCases 
+for d = data(1).DETERMINE_indices'
+ 
+    DETERMINE_diastolic_myo_shapes(d,:) = all_training_diastolic_myo_shapes(d,:);
+    DETERMINE_systolic_myo_shapes(d,:) = all_training_systolic_myo_shapes(d,:);
+   
 end
+for m = data(1).MESA_indices'
+    MESA_diastolic_myo_shapes(m,:) = all_training_diastolic_myo_shapes(m,:);
+    MESA_systolic_myo_shapes(m,:) = all_training_systolic_myo_shapes(m,:);
+    
+end
+% delete empty rows
+DETERMINE_diastolic_myo_shapes( ~any(DETERMINE_diastolic_myo_shapes,2), : ) = [];
+DETERMINE_systolic_myo_shapes( ~any(DETERMINE_systolic_myo_shapes,2), : ) = [];
+MESA_diastolic_myo_shapes( ~any(MESA_diastolic_myo_shapes,2), : ) = [];
+MESA_systolic_myo_shapes( ~any(MESA_systolic_myo_shapes,2), : ) = [];
 
 training_diastolic_myo_shapes = [DETERMINE_diastolic_myo_shapes ; MESA_diastolic_myo_shapes];
 training_systolic_myo_shapes = [DETERMINE_systolic_myo_shapes ; MESA_systolic_myo_shapes];
@@ -262,6 +281,43 @@ for b = 1:5
     
 end
 
+%% visualise modes
+
+f1= figure;
+% screen_size = get(0, 'ScreenSize');
+% set(f1,'Position', [0 0 screen_size(3) screen_size(4)])
+pause
+for n = 1:2
+    for c = -1:0.1:1
+        
+        sys_myo_new_shape(:,1) = sys_myo_mean(:) + principle_sys_myo_eigenvectors(:,1)*c*sys_myo_max_b(1,1);
+        sys_myo_new_shape(:,2) = sys_myo_mean(:) + principle_sys_myo_eigenvectors(:,2)*c*sys_myo_max_b(2,1);
+        %
+        
+        subplot 121
+        plot3D(reshape(sys_myo_mean,[2178 , 3]))
+        set(gca ,'XLim',[-50, 10], 'YLim', [-50 10], 'ZLim', [-80, 0])
+        xlabel 'x', ylabel 'y', zlabel 'z'
+        hold on
+        plot3D(reshape(sys_myo_new_shape(:,1), [2178 3]))
+        set(gca ,'XLim',[-50, 10], 'YLim', [-50 10], 'ZLim', [-80, 30])
+        hold off
+        legend 'mean' 'mode1'
+        
+        subplot 122
+        plot3D(reshape(sys_myo_mean,[2178 , 3]))
+        set(gca ,'XLim',[-50, 10], 'YLim', [-50 10], 'ZLim', [-80, 0])
+        xlabel 'x', ylabel 'y', zlabel 'z'
+        hold on
+        plot3D(reshape(sys_myo_new_shape(:,2), [2178 3]))
+        set(gca ,'XLim',[-50, 10], 'YLim', [-50 10], 'ZLim', [-80,30])
+        legend 'mean' 'mode2'
+        pause(0.3)
+        axis equal
+        
+        hold off
+    end
+end
 %% visualise b values - histograms
 b = 5;
 figure
@@ -289,35 +345,105 @@ plot3D(DETERMINE_sys_myo_b(:,b))
 plot3D(MESA_sys_myo_b(:,b))
 hold off
  
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% CLASSIFICATION
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% SVM
 % set training data
 trainingdata(:,1:5) = [DETERMINE_sys_myo_b(:,1:5) ; MESA_sys_myo_b(:,1:5)]; %from the PDM
-% trainingdata(:,6) = [DETERMINE_EF ; MESA_EF];
+trainingdata(:,6) = [DETERMINE_ejectionFractions' ; MESA_ejectionFractions'];
 names = char(200,1);
 % names(1:100,1) = 'd'; 
 % names(101:199,1) = 'm';
 names(1:100,1) = 1; 
 names(101:200,1) = 2;
 
+b = [1;4;6]
+figure
+title 'SVM classification'
+hold on 
+plot3D(trainingdata(1:100,b))
+plot3D(trainingdata(101:200,b))
+hold off
+legend ' DETERMINE' 'MESA'
+xlabel 'b1'
+ylabel 'b4'
+zlabel 'Ejection fractions'
 
 % svmtrain (will be removed from later versions of matlab)
-svmStruct = svmtrain(trainingdata(:,[1;2]),names,'ShowPlot', true, 'kernel_function', 'linear');
+svmStruct = svmtrain(trainingdata(:,[4;6]),names,'ShowPlot', true, 'kernel_function', 'linear');
 % 
+
+% %  which is the best trio of b values for classification?
+% tic
+% for param1 = 1:5
+%     for param2 = 1:5
+%         for param3 = 1:5
+%             % SVMModel = fitcsvm(trainingdata, group, 'Standardize', true)
+%             SVMModel = fitcsvm(trainingdata(:,[param1;param2;param3]), names, 'KernelFunction', 'linear' );
+%             % cross-validation of the SVM
+%             CVSVMModel = crossval(SVMModel);
+%             misclassification_rate = kfoldLoss(CVSVMModel);
+%             classification_rates(param1,param2,param3) = 1 - misclassification_rate
+%         end
+%     end
+% end
+% toc
+
+tic
 for param1 = 1:5
     for param2 = 1:5
-        for param3 = 1:5
-            % SVMModel = fitcsvm(trainingdata, group, 'Standardize', true)
-            SVMModel = fitcsvm(trainingdata(:,[param1;param2;param3]), names, 'KernelFunction', 'linear' );
-            % cross-validation of the SVM
-            CVSVMModel = crossval(SVMModel);
-            misclassification_rate = kfoldLoss(CVSVMModel);
-            classification_rates(param1,param2,param3) = 1 - misclassification_rate
-        end
-    end
+        param1
+        param2
+        % SVMModel = fitcsvm(trainingdata, group, 'Standardize', true)
+        SVMModel = fitcsvm(trainingdata(:,[param1;param2]), names, 'KernelFunction', 'linear' );
+        % cross-validation of the SVM
+        CVSVMModel = crossval(SVMModel);
+        misclassification_rate = kfoldLoss(CVSVMModel);
+        classification_rates(param1,param2) = 1 - misclassification_rate                
+    end 
 end
+toc
+tic
+for param1 = 1:5
+    for param2 = 1:5
+        param1
+        param2
+        % SVMModel = fitcsvm(trainingdata, group, 'Standardize', true)
+        SVMModel = fitcsvm(trainingdata(:,[param1;param2;6]), names, 'KernelFunction', 'linear' );
+        % cross-validation of the SVM
+        CVSVMModel = crossval(SVMModel);
+        misclassification_rate = kfoldLoss(CVSVMModel);
+        classification_rates_withEF(param1,param2) = 1 - misclassification_rate                
+    end 
+end
+toc
+imagesc(classification_rates)
+imagesc(classification_rates_withEF)
+
+figure
+subplot 121
+% surf(classification_rates)
+imagesc(classification_rates)
+title ' classification rates'
+% xlim ([1 ; 5]')
+% ylim ([1 ; 5])
+xlabel 'b'
+ylabel 'b'
+caxis([.5, .9])
+colorbar
+
+subplot 122
+% surf(classification_rates_withEF(:,:,6))
+imagesc(classification_rates_withEF(:,:,6))
+title ' classification rates with EF'
+xlabel 'b'
+ylabel 'b'
+caxis([.8, .9])
+colorbar
+
 
 %% kmeans
 idx = kmeans(trainingdata(:,:),2);
