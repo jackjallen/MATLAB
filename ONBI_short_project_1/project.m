@@ -16,7 +16,7 @@ addpath('C:\Users\jesu2687\Documents\MATLAB\ONBI_short_project_1')
 addpath C:\Users\jesu2687\Documents\MATLAB\ErnestoCode\Tools\MESHES\
 addpath C:\Users\jesu2687\Documents\MATLAB\ErnestoCode\Tools
 addpath C:\Users\jesu2687\Documents\MATLAB\ErnestoCode\
-addpath C:\Users\jesu2687\Documents\MATLAB\ONBI_short_project_1\output-stacom-newcase\output-stacom-newcase
+addpath C:\Users\jesu2687\Documents\MATLAB\output-stacom-newcase\output-stacom-newcase
 load('C:\Users\jesu2687\Documents\MATLAB\ONBI_short_project_1\project1_data.mat');
 load('C:\Users\jesu2687\Documents\MATLAB\ONBI_short_project_1\labels.mat');
 
@@ -82,10 +82,20 @@ disp('finished calculating ejection fractions')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 disp('started calculating accuracies')
 
-[data, accuracy, sensitivity, specificity] = calcAccuracyEF(data);
+%pass the positive and negative condition
+[data, accuracyEF, sensitivityEF, specificityEF] = calcAccuracy( data, cell2mat({data(data(1).DETERMINE_indices).ejectionFraction}) ,  cell2mat({data(data(1).MESA_indices).ejectionFraction}), 1,100,1);
 
-plotROC(sensitivity, specificity)
-plotAccuracy(data, accuracy)
+ 
+
+figure
+plotROC(sensitivityEF, specificityEF)
+title 'Ejection fraction'
+
+plotAccuracyEF(data, accuracyEF, cell2mat({data(data(1).DETERMINE_indices).ejectionFraction}) ,  cell2mat({data(data(1).MESA_indices).ejectionFraction}), 'DETERMINE', 'MESA' , 100)
+xlabel 'ejection fraction (%)'
+ylabel 'frequency'
+
+[data, data(1).accuracies.EF, data(1).sensitivities.EF, data(1).specificities.EF] = calcThresholdAccuracy(data, cell2mat({data(data(1).DETERMINE_indices).ejectionFraction}) ,  cell2mat({data(data(1).MESA_indices).ejectionFraction}),1,54)
 
 
 disp('finished calculating accuracies')
@@ -101,19 +111,39 @@ disp('finished calculating triangular mesh areas and triangle side lengths')
 [data] = calcAVR(data);
 
 figure
+nbins = 30;
+title 'systolic myocardium, surface area to volume ratio'
 hold on
-histogram(cell2mat({data(data(1).MESA_indices).MESA_sys_myo_AVratio}))
-histogram(cell2mat({data(data(1).DETERMINE_indices).DETERMINE_sys_myo_AVratio}))
+histogram(cell2mat({data(data(1).MESA_indices).MESA_sys_myo_AVratio}),nbins)
+histogram(cell2mat({data(data(1).DETERMINE_indices).DETERMINE_sys_myo_AVratio}),nbins)
+xlabel 'surface area to volume ratio (AVR)'
+ylabel 'frequency'
 
 figure
+nbins = 30;
 title 'systolic endocardium, surface area to volume ratio'
 hold on
-histogram(cell2mat({data(data(1).MESA_indices).MESA_sys_endo_AVratio}))
-histogram(cell2mat({data(data(1).DETERMINE_indices).DETERMINE_sys_endo_AVratio}))
+histogram(cell2mat({data(data(1).MESA_indices).MESA_sys_endo_AVratio}),nbins)
+histogram(cell2mat({data(data(1).DETERMINE_indices).DETERMINE_sys_endo_AVratio}),nbins)
+xlabel 'surface area to volume ratio (AVR)'
+ylabel 'frequency'
 
-[data, accuracy, sensitivity, specificity] = calcAccuracyAVratio(data);
-plotROC(sensitivity, specificity)
-plotAccuracy(data, accuracy)
+[data, accuracyAV, sensitivityAV, specificityAV] = calcAccuracy(data, cell2mat({data(data(1).DETERMINE_indices).DETERMINE_sys_endo_AVratio}), cell2mat({data(data(1).MESA_indices).MESA_sys_endo_AVratio}),1,200,100);
+figure
+plotROC(sensitivityAV, specificityAV)
+title 'surface area to volume ratio'
+% legend ('systolic, endocardium surface area to volume ratio' , 'ejection fraction' ,'Location', 'best')
+
+
+plotAccuracyAV( data,accuracyAV, cell2mat({data(data(1).DETERMINE_indices).DETERMINE_sys_endo_AVratio}), cell2mat({data(data(1).MESA_indices).MESA_sys_endo_AVratio}), 'DETERMINE', 'MESA', 25)
+subplot 121
+xlabel 'surface area to volume ratio (%)'
+subplot 122
+xlabel 'surface area to volume ratio (%)'
+
+[data, data(1).accuracies.sysEndoAVratio, data(1).sensitivities.sysEndoAVratio, data(1).specificities.sysEndoAVratio] = calcThresholdAccuracy(data,cell2mat({data(data(1).DETERMINE_indices).DETERMINE_sys_endo_AVratio}) ,  cell2mat({data(data(1).MESA_indices).MESA_sys_endo_AVratio}),100,15)
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% GENERAL PROCRUSTES ANALYSIS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -218,6 +248,14 @@ sorted_sys_myo_eigenvalues = sort(sys_myo_eigenvalues(:), 'descend');
 principle_dia_myo_eigenvalues = sorted_dia_myo_eigenvalues(1:nEigenvalues);
 principle_sys_myo_eigenvalues = sorted_sys_myo_eigenvalues(1:nEigenvalues);
 
+sorted_dia_myo_eigenvalues_contributions = 100*(sorted_dia_myo_eigenvalues./(sum(sorted_dia_myo_eigenvalues)));
+sorted_sys_myo_eigenvalues_contributions = 100*(sorted_sys_myo_eigenvalues./(sum(sorted_sys_myo_eigenvalues)));
+
+% contribution from the chosen eigenvectors, as a percentage
+principle_dia_myo_eigenvalues_contribution = sum(sorted_dia_myo_eigenvalues_contributions(1:nEigenvalues,1))
+principle_sys_myo_eigenvalues_contribution = sum(sorted_sys_myo_eigenvalues_contributions(1:nEigenvalues,1))
+
+
 for n = 1:nEigenvalues 
 [dia_myo_eRows(1,n), dia_myo_eCols(1,n)] = find(dia_myo_eigenvalues == principle_dia_myo_eigenvalues(n,1));
 [sys_myo_eRows(1,n), sys_myo_eCols(1,n)] = find(sys_myo_eigenvalues == principle_sys_myo_eigenvalues(n,1)); 
@@ -318,6 +356,32 @@ for n = 1:2
         hold off
     end
 end
+
+
+figure
+sys_myo_new_shape(:,1) = sys_myo_mean(:) + principle_sys_myo_eigenvectors(:,1)*-1*sys_myo_max_b(1,1);
+plot3D(reshape(sys_myo_new_shape(:,1), [2178 3]))
+axis tight manual
+ax = gca;
+ax.NextPlot = 'replaceChildren';
+
+loops = 40;
+F(loops) = struct('cdata',[],'colormap',[]);
+for c = 1:100
+    sys_myo_new_shape(:,1) = sys_myo_mean(:) + principle_sys_myo_eigenvectors(:,1)*-c/100*sys_myo_max_b(1,1);;
+    plot3D(reshape(sys_myo_new_shape(:,1), [2178 3]))
+    drawnow
+    F(c) = getframe;
+end
+for c = 1:100
+    sys_myo_new_shape(:,1) = sys_myo_mean(:) + principle_sys_myo_eigenvectors(:,1)*+c/100*sys_myo_max_b(1,1);;
+    plot3D(reshape(sys_myo_new_shape(:,1), [2178 3]))
+    drawnow
+    F(c) = getframe;
+end
+
+movie(F)
+
 %% visualise b values - histograms
 b = 5;
 figure
@@ -353,19 +417,22 @@ hold off
 %% SVM
 % set training data
 trainingdata(:,1:5) = [DETERMINE_sys_myo_b(:,1:5) ; MESA_sys_myo_b(:,1:5)]; %from the PDM
-trainingdata(:,6) = [DETERMINE_ejectionFractions' ; MESA_ejectionFractions'];
+trainingdata(:,6:10) = [DETERMINE_dia_myo_b(:,1:5) ; MESA_dia_myo_b(:,1:5)];
+trainingdata(:,11) = [DETERMINE_ejectionFractions' ; MESA_ejectionFractions'];
 names = char(200,1);
 % names(1:100,1) = 'd'; 
 % names(101:199,1) = 'm';
 names(1:100,1) = 1; 
 names(101:200,1) = 2;
 
-b = [1;4;6]
+% b = [1;4;6];
+b=6
 figure
 title 'SVM classification'
 hold on 
-plot3D(trainingdata(1:100,b))
-plot3D(trainingdata(101:200,b))
+histogram(trainingdata(1:100,b))
+% plot3D(trainingdata(1:100,b))
+% plot3D(trainingdata(101:200,b))
 hold off
 legend ' DETERMINE' 'MESA'
 xlabel 'b1'
@@ -377,52 +444,67 @@ svmStruct = svmtrain(trainingdata(:,[4;6]),names,'ShowPlot', true, 'kernel_funct
 % 
 
 % %  which is the best trio of b values for classification?
-% tic
-% for param1 = 1:5
-%     for param2 = 1:5
-%         for param3 = 1:5
-%             % SVMModel = fitcsvm(trainingdata, group, 'Standardize', true)
-%             SVMModel = fitcsvm(trainingdata(:,[param1;param2;param3]), names, 'KernelFunction', 'linear' );
-%             % cross-validation of the SVM
-%             CVSVMModel = crossval(SVMModel);
-%             misclassification_rate = kfoldLoss(CVSVMModel);
-%             classification_rates(param1,param2,param3) = 1 - misclassification_rate
-%         end
-%     end
-% end
-% toc
-
 tic
-for param1 = 1:5
-    for param2 = 1:5
+for param1 = 1:10
+    for param2 = 1:10 
+     for   param3 = 11 % ejection fractions
+        tic
         param1
         param2
         % SVMModel = fitcsvm(trainingdata, group, 'Standardize', true)
-        SVMModel = fitcsvm(trainingdata(:,[param1;param2]), names, 'KernelFunction', 'linear' );
-        % cross-validation of the SVM
-        CVSVMModel = crossval(SVMModel);
-        misclassification_rate = kfoldLoss(CVSVMModel);
-        classification_rates(param1,param2) = 1 - misclassification_rate                
-    end 
-end
-toc
-tic
-for param1 = 1:5
-    for param2 = 1:5
-        param1
-        param2
-        % SVMModel = fitcsvm(trainingdata, group, 'Standardize', true)
-        SVMModel = fitcsvm(trainingdata(:,[param1;param2;6]), names, 'KernelFunction', 'linear' );
-        % cross-validation of the SVM
-        CVSVMModel = crossval(SVMModel);
-        misclassification_rate = kfoldLoss(CVSVMModel);
-        classification_rates_withEF(param1,param2) = 1 - misclassification_rate                
-    end 
-end
-toc
-imagesc(classification_rates)
-imagesc(classification_rates_withEF)
+    SVMModel = fitcsvm(trainingdata(:,[param1;param2;param3]), names, 'KernelFunction', 'linear' );
+%         SVMModel = fitcsvm(trainingdata(:,:), names, 'KernelFunction', 'linear' );
+%  91% classified when all 11 used
 
+        % cross-validation of the SVM
+        CVSVMModel = crossval(SVMModel);
+        misclassification_rate = kfoldLoss(CVSVMModel);
+%         classification_rates(param1,param2) = 1 - misclassification_rate                
+        tmp_classification_rates(param1,param2) = 1 - misclassification_rate                
+toc
+     end
+    end 
+end
+ %% Linear discriminant analysis
+ tic
+ for param1 = 1:10
+     for param2 = 1:10 % ejection fractions
+         for param3 = 11
+             tic
+             %          obj = fitcdiscr(trainingdata(:,[param1, param2, param3]), names);
+%              obj = fitcdiscr(trainingdata(:,:), names); %using all 11 gives 93% classified
+             obj = fitcdiscr(trainingdata(:,[1;11]), names); 
+             resuberror = resubLoss(obj);
+             classification(param1, param2) = 1 - resuberror;
+         end
+     end
+ end
+ toc
+ 
+ %%
+ %confusion matrix shows performance of classifier.
+ % row 1: DETERMINE, row 2: MESA
+ R = confusionmat(obj.Y,resubPredict(obj))
+ 
+%plot LDA example
+sysMyob1 = trainingdata(:,1);
+EF = trainingdata(:,11);
+figure
+h1 = gscatter(sysMyob1,EF,names,'krb','ov^',[],'off');
+hold on
+h1(1).LineWidth = 2;
+h1(2).LineWidth = 2;
+K = obj.Coeffs(1,2).Const;
+L = obj.Coeffs(1,2).Linear
+f = @(sysmyob1,EF) K + L(1)*sysmyob1 + L(2)*EF;
+h2 = ezplot(f,[-100 900 10 80]);
+h2.Color = 'g';
+h2.LineWidth = 2; 
+legend 'DETERMINE' 'MESA' 'LDA classification boundary' 'Location' 'best'
+hold off
+
+
+%%
 figure
 subplot 121
 % surf(classification_rates)
