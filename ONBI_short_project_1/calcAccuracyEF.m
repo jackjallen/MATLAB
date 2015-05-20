@@ -1,5 +1,5 @@
-function[data, accuracy, sensitivity, specificity] = calcAccuracy(data, positive, negative,accMin,accMax,factor)
-% 
+function[data, accuracy, sensitivity, specificity] = calcAccuracy(positive, negative)
+
 % for n = 1:100
 %     n
 %     for d = data(1).DETERMINE_indices(n)
@@ -12,14 +12,13 @@ function[data, accuracy, sensitivity, specificity] = calcAccuracy(data, positive
 %     end
 %     
 % end
+positive;
+negative;
 
-positive(1,:) = positive(:)*factor;
-negative(1,:) = negative(:)*factor;
-
-for i = accMin:accMax
+for i = 1:100
     % if we class over threshold as MESA ('negative') and under threshold as
     % DETERMINE ('positive')
-    i;
+    i
     
     nfalse_negative = sum(positive>i);
     ntrue_negative = sum(negative>i);

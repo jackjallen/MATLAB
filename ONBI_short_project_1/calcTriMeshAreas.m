@@ -1,44 +1,31 @@
 function [data] = calcTriMeshAreas(data)
 
-for i = 1:401 
-    for d = find(data(1).MESA_indices==i)
-       
-       data(i).MESA_dia_endo_sides = calcTriSides(data(i).diastolic.endo.tri, data(i).diastolic.endo.xyz); 
-       data(i).MESA_dia_endo_areas(d,1) = calcTriMeshArea(data(i).MESA_dia_endo_sides);
-        
-       data(i).MESA_dia_epi_sides = calcTriSides(data(i).diastolic.epi.tri, data(i).diastolic.epi.xyz);
-       data(i).MESA_dia_epi_areas(d,1) = calcTriMeshArea(data(i).MESA_dia_epi_sides);
-       
-       data(i).MESA_sys_endo_sides = calcTriSides(data(i).systolic.endo.tri, data(i).systolic.endo.xyz);
-       data(i).MESA_sys_endo_areas(d,1) = calcTriMeshArea(data(i).MESA_sys_endo_sides);
-     
-       data(i).MESA_sys_epi_sides = calcTriSides(data(i).systolic.epi.tri, data(i).systolic.epi.xyz);
-       data(i).MESA_sys_epi_areas(d,1) = calcTriMeshArea(data(i).MESA_sys_epi_sides);
-      
-       data(i).MESA_dia_myo_sides = calcTriSides(data(i).diastolic.myo.tri, data(i).diastolic.myo.xyz);
-       data(i).MESA_dia_myo_areas(d,1) = calcTriMeshArea(data(i).MESA_dia_myo_sides);
+for i = 1:401
     
-       data(i).MESA_sys_myo_sides = calcTriSides(data(i).systolic.myo.tri, data(i).systolic.myo.xyz);
-       data(i).MESA_sys_myo_areas(d,1) = calcTriMeshArea(data(i).MESA_sys_myo_sides);
-    end
+    %add area calc for all cases?
+end
 
-    for d = find(data(1).DETERMINE_indices==i)
-       data(i).DETERMINE_dia_endo_sides = calcTriSides(data(i).diastolic.endo.tri, data(i).diastolic.endo.xyz); 
-       data(i).ETERMINE_dia_endo_areas(d,1) = calcTriMeshArea(data(i).DETERMINE_dia_endo_sides);
-          
-       data(i).DETERMINE_dia_epi_sides = calcTriSides(data(i).diastolic.epi.tri, data(i).diastolic.epi.xyz);
-       data(i).DETERMINE_dia_epi_areas(d,1) = calcTriMeshArea(data(i).DETERMINE_dia_epi_sides);
-       
-       data(i).DETERMINE_sys_endo_sides = calcTriSides(data(i).systolic.endo.tri, data(i).systolic.endo.xyz);
-       data(i).DETERMINE_sys_endo_areas(d,1) = calcTriMeshArea(data(i).DETERMINE_sys_endo_sides);
-       
-       data(i).DETERMINE_sys_epi_sides = calcTriSides(data(i).systolic.epi.tri, data(i).systolic.epi.xyz);
-       data(i).DETERMINE_sys_epi_areas(d,1) = calcTriMeshArea(data(i).DETERMINE_sys_epi_sides);
-       
-       data(i).DETERMINE_dia_myo_sides = calcTriSides(data(i).diastolic.myo.tri, data(i).diastolic.myo.xyz);
-       data(i).DETERMINE_dia_myo_areas(d,1) = calcTriMeshArea(data(i).DETERMINE_dia_myo_sides);
-       
-       data(i).DETERMINE_sys_myo_sides = calcTriSides(data(i).systolic.myo.tri, data(i).systolic.myo.xyz);
-       data(i).DETERMINE_sys_myo_areas(d,1) = calcTriMeshArea(data(i).DETERMINE_sys_myo_sides);
-    end
+for m =data(1).MESA_indices'
+    
+   
+   [data(m).MESA_dia_endo_total_area, ~, ~] = trifacet_area3D(data(m).diastolic.endo.tri, data(m).diastolic.endo.xyz);    
+   [data(m).MESA_dia_epi_total_area, ~, ~] = trifacet_area3D(data(m).diastolic.epi.tri, data(m).diastolic.epi.xyz);
+    
+   [data(m).MESA_sys_endo_total_area, ~,~] = trifacet_area3D(data(m).systolic.endo.tri, data(m).systolic.endo.xyz);
+   [data(m).MESA_sys_epi_total_area, ~, ~] = trifacet_area3D(data(m).systolic.epi.tri, data(m).systolic.epi.xyz);
+
+   [data(m).MESA_dia_myo_total_area, ~, ~] = trifacet_area3D(data(m).diastolic.myo.tri, data(m).diastolic.myo.xyz);
+   [data(m).MESA_sys_myo_total_area, ~, ~] = trifacet_area3D(data(m).systolic.myo.tri, data(m).systolic.myo.xyz);
+end
+
+for d = data(1).DETERMINE_indices'
+ [data(d).DETERMINE_dia_endo_total_area, ~, ~] = trifacet_area3D(data(d).diastolic.endo.tri, data(d).diastolic.endo.xyz);    
+   [data(d).DETERMINE_dia_epi_total_area, ~, ~] = trifacet_area3D(data(d).diastolic.epi.tri, data(d).diastolic.epi.xyz);
+    
+   [data(d).DETERMINE_sys_endo_total_area, ~,~] = trifacet_area3D(data(d).systolic.endo.tri, data(d).systolic.endo.xyz);
+   [data(d).DETERMINE_sys_epi_total_area, ~, ~] = trifacet_area3D(data(d).systolic.epi.tri, data(d).systolic.epi.xyz);
+
+   [data(d).DETERMINE_dia_myo_total_area, ~, ~] = trifacet_area3D(data(d).diastolic.myo.tri, data(d).diastolic.myo.xyz);
+   [data(d).DETERMINE_sys_myo_total_area, ~, ~] = trifacet_area3D(data(d).systolic.myo.tri, data(d).systolic.myo.xyz);
+end
 end

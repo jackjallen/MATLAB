@@ -8,7 +8,7 @@ plot(accuracy(1,1:AccXMax));
 max_accuracy = max(accuracy)
 %find threshold that gives greatest accuracy
 threshold = find(accuracy == max(accuracy));
-threshold = threshold(1); %incase there are two maximum accuracies
+threshold = threshold(1) %incase there are two maximum accuracies
 hold on
 plot([threshold threshold],[0.5 1], 'g')
 plot([0 AccXMax],[max(accuracy)  max(accuracy)], 'g')

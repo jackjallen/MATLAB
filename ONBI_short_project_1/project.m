@@ -105,16 +105,17 @@ disp('finished calculating accuracies')
 % gives same numbers as Ernesto's code :) (MeshAreatriangles(M))
 disp('started calculating triangular mesh areas and triangle side lengths')
 [data] = calcTriMeshAreas(data);
+
 disp('finished calculating triangular mesh areas and triangle side lengths')
 
 % calculate area to volume ratios
 [data] = calcAVR(data);
 
 
-DETERMINE_sys_endo_AVratios = cell2mat({data(:).DETERMINE_sys_endo_AVratio})'
-DETERMINE_dia_endo_AVratios = cell2mat({data(:).DETERMINE_dia_endo_AVratio})'
-MESA_sys_endo_AVratios = cell2mat({data(:).MESA_sys_endo_AVratio})'
-MESA_dia_endo_AVratios = cell2mat({data(:).MESA_dia_endo_AVratio})'
+DETERMINE_sys_endo_AVratios = cell2mat({data(:).DETERMINE_sys_endo_AVratio})' ;
+DETERMINE_dia_endo_AVratios = cell2mat({data(:).DETERMINE_dia_endo_AVratio})' ;
+MESA_sys_endo_AVratios = cell2mat({data(:).MESA_sys_endo_AVratio})' ;
+MESA_dia_endo_AVratios = cell2mat({data(:).MESA_dia_endo_AVratio})' ;
 
 
 figure
@@ -159,6 +160,7 @@ xlabel 'systolic endocardium surface area to volume ratio (%)'
 % two myo.xyz vectors. Finally, the transformed myo.xyz vectors are split
 % to extract transformed endo and epi shape vectors.
 disp('starting procrustes analysis')
+tic
 
 %store dimensions of the shapes
 [shape_nRows , shape_nCols] = size(data(2).diastolic.endo.xyz(1:1089,:));
@@ -175,27 +177,37 @@ sys_epi_reference = data(initial_reference_id).systolic.epi.xyz(1:1089,:);
 dia_myo_reference = reshape([dia_endo_reference(:) ; dia_epi_reference(:)], [2*1089 3]);
 sys_myo_reference = reshape([sys_endo_reference(:)  ; sys_epi_reference(:)], [2*1089 3]);
 
+dia_sys_myo_reference = [dia_myo_reference ; sys_myo_reference ];
+
 % Think of endo and epi as one shape (concatenate).
 for i = 1:401 %SMM001 has already been replaced by SMM401 in the script
     data(i).diastolic.myo.xyz = [data(i).diastolic.endo.xyz(1:1089,:) ; data(i).diastolic.epi.xyz(1:1089,:)];
     data(i).systolic.myo.xyz = [data(i).systolic.endo.xyz(1:1089,:) ; data(i).systolic.epi.xyz(1:1089,:)];
+
+    %dia endo ; dia epi ; sys endo ; sys epi
+    data(i).dia_sys.myo.xyz = [data(i).diastolic.myo.xyz ; data(i).systolic.myo.xyz] ;
 end
+
+
 
 %p = number of times procrustes is performed.
 procrustes_iterations = 3;
-[data, dia_myo_mean, sys_myo_mean, MESA_diastolic_myo_shapes, DETERMINE_systolic_myo_shapes, all_training_diastolic_myo_shapes, all_training_systolic_myo_shapes ] = calcProcrustes(data, procrustes_iterations, dia_myo_reference, sys_myo_reference);
+[data, dia_myo_mean, sys_myo_mean, dia_sys_myo_mean, MESA_diastolic_myo_shapes, DETERMINE_systolic_myo_shapes, all_training_diastolic_myo_shapes, all_training_systolic_myo_shapes , all_training_dia_sys_myo_shapes] = calcProcrustes(data, procrustes_iterations, dia_myo_reference, sys_myo_reference, dia_sys_myo_reference);
 
 % % reshape individual endo and epi shapes.
 % dia_endo_mean = reshape(dia_endo_mean,size(data(1).diastolic.endo.xyz));
 % dia_epi_mean = reshape(dia_epi_mean,size(data(1).diastolic.endo.xyz));
 % sys_endo_mean = reshape(sys_endo_mean,size(data(1).diastolic.endo.xyz));
 % sys_epi_mean = reshape(sys_epi_mean,size(data(1).diastolic.endo.xyz));
-dia_myo_reference = reshape(dia_myo_mean, [2*shape_nRows, shape_nCols]);
-sys_myo_reference = reshape(sys_myo_mean, [2*shape_nRows, shape_nCols]);
+
+% dia_myo_reference = reshape(dia_myo_mean, [2*shape_nRows, shape_nCols]);
+% sys_myo_reference = reshape(sys_myo_mean, [2*shape_nRows, shape_nCols]);
 
 [data] = extractEndoEpi(data, shape_nRows);
 
 disp('finished procrustes analysis')
+toc
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% SHAPE MODELING
@@ -204,6 +216,7 @@ disp('finished procrustes analysis')
 % PCA
 % see Cootes tutorial for help: http://personalpages.manchester.ac.uk/staff/timothy.f.cootes/Models/app_models.pdf
 disp('started PCA')
+tic
 % do PCA on MESA and DETERMINE cases only
 % nCases = 401;
 % for i = 1:nCases
@@ -212,26 +225,37 @@ for d = data(1).DETERMINE_indices'
     DETERMINE_diastolic_myo_shapes(d,:) = all_training_diastolic_myo_shapes(d,:);
     DETERMINE_systolic_myo_shapes(d,:) = all_training_systolic_myo_shapes(d,:);
     
+    DETERMINE_dia_sys_myo_shapes(d,:) = all_training_dia_sys_myo_shapes(d,:);
 end
 for m = data(1).MESA_indices'
     MESA_diastolic_myo_shapes(m,:) = all_training_diastolic_myo_shapes(m,:);
     MESA_systolic_myo_shapes(m,:) = all_training_systolic_myo_shapes(m,:);
     
+    MESA_dia_sys_myo_shapes(m,:) = all_training_dia_sys_myo_shapes(m,:);
 end
 % delete empty rows
 DETERMINE_diastolic_myo_shapes( ~any(DETERMINE_diastolic_myo_shapes,2), : ) = [];
 DETERMINE_systolic_myo_shapes( ~any(DETERMINE_systolic_myo_shapes,2), : ) = [];
+DETERMINE_dia_sys_myo_shapes( ~any(DETERMINE_dia_sys_myo_shapes,2), : ) = [];
 MESA_diastolic_myo_shapes( ~any(MESA_diastolic_myo_shapes,2), : ) = [];
 MESA_systolic_myo_shapes( ~any(MESA_systolic_myo_shapes,2), : ) = [];
+MESA_dia_sys_myo_shapes( ~any(MESA_dia_sys_myo_shapes,2), : ) = [];
+
+% % check procrustes
+% for m = 1:10
+% plot3D( reshape(MESA_dia_sys_myo_shapes(m,:),[4*1089 3]) )
+% pause;
+% end
 
 training_diastolic_myo_shapes = [DETERMINE_diastolic_myo_shapes ; MESA_diastolic_myo_shapes];
 training_systolic_myo_shapes = [DETERMINE_systolic_myo_shapes ; MESA_systolic_myo_shapes];
-
+training_dia_sys_myo_shapes = [DETERMINE_dia_sys_myo_shapes ; MESA_dia_sys_myo_shapes];
 % find mean shape and then use it to find the covariance matrices
 disp('started calculating covariance and mean shape')
 
 dia_myo_cov_mat = cov(training_diastolic_myo_shapes);
 sys_myo_cov_mat = cov(training_systolic_myo_shapes);
+dia_sys_myo_cov_mat = cov(training_dia_sys_myo_shapes);
 
 disp('finished calculating covariance and mean shape')
 % find eigenvectors of covariance matrix (of just MESA)
@@ -239,6 +263,7 @@ disp('started calculating eigenvectors of covariance matrix')
 
 [dia_myo_eigenvectors,dia_myo_eigenvalues]=eig(dia_myo_cov_mat);
 [sys_myo_eigenvectors,sys_myo_eigenvalues]=eig(sys_myo_cov_mat);
+[dia_sys_myo_eigenvectors,dia_sys_myo_eigenvalues]=eig(dia_sys_myo_cov_mat);
 
 % % Each eigenvalue gives the variance of the data about the mean in the
 % % direction of the corresponding eigenvector. Compute the total variance
@@ -252,23 +277,30 @@ disp('finished calculating eigenvectors of covariance matrix')
 nEigenvalues = 5;
 sorted_dia_myo_eigenvalues = sort(dia_myo_eigenvalues(:), 'descend');
 sorted_sys_myo_eigenvalues = sort(sys_myo_eigenvalues(:), 'descend');
+sorted_dia_sys_myo_eigenvalues = sort(dia_sys_myo_eigenvalues(:), 'descend');
+
 principle_dia_myo_eigenvalues = sorted_dia_myo_eigenvalues(1:nEigenvalues);
 principle_sys_myo_eigenvalues = sorted_sys_myo_eigenvalues(1:nEigenvalues);
+principle_dia_sys_myo_eigenvalues = sorted_dia_sys_myo_eigenvalues(1:nEigenvalues);
 
 sorted_dia_myo_eigenvalues_contributions = 100*(sorted_dia_myo_eigenvalues./(sum(sorted_dia_myo_eigenvalues)));
 sorted_sys_myo_eigenvalues_contributions = 100*(sorted_sys_myo_eigenvalues./(sum(sorted_sys_myo_eigenvalues)));
+sorted_dia_sys_myo_eigenvalues_contributions = 100*(sorted_dia_sys_myo_eigenvalues./(sum(sorted_dia_sys_myo_eigenvalues)));
 
 % contribution from the chosen eigenvectors, as a percentage
 principle_dia_myo_eigenvalues_contribution = sum(sorted_dia_myo_eigenvalues_contributions(1:nEigenvalues,1))
 principle_sys_myo_eigenvalues_contribution = sum(sorted_sys_myo_eigenvalues_contributions(1:nEigenvalues,1))
+principle_dia_sys_myo_eigenvalues_contribution = sum(sorted_dia_sys_myo_eigenvalues_contributions(1:nEigenvalues,1))
 
 
 for n = 1:nEigenvalues
     [dia_myo_eRows(1,n), dia_myo_eCols(1,n)] = find(dia_myo_eigenvalues == principle_dia_myo_eigenvalues(n,1));
     [sys_myo_eRows(1,n), sys_myo_eCols(1,n)] = find(sys_myo_eigenvalues == principle_sys_myo_eigenvalues(n,1));
+       [dia_sys_myo_eRows(1,n), dia_sys_myo_eCols(1,n)] = find(dia_sys_myo_eigenvalues == principle_dia_sys_myo_eigenvalues(n,1));
     
     principle_dia_myo_eigenvectors(:,n) = dia_myo_eigenvectors(:, dia_myo_eCols(1,n));
     principle_sys_myo_eigenvectors(:,n) = sys_myo_eigenvectors(:, sys_myo_eCols(1,n));
+    principle_dia_sys_myo_eigenvectors(:,n) = dia_sys_myo_eigenvectors(:, dia_sys_myo_eCols(1,n));
     
 end
 
@@ -278,6 +310,8 @@ dia_myo_min_b = - 3*sqrt(principle_dia_myo_eigenvalues);
 dia_myo_max_b = 3*sqrt(principle_dia_myo_eigenvalues);
 sys_myo_min_b = - 3*sqrt(principle_sys_myo_eigenvalues);
 sys_myo_max_b = 3*sqrt(principle_sys_myo_eigenvalues);
+dia_sys_myo_min_b = - 3*sqrt(principle_dia_sys_myo_eigenvalues);
+dia_sys_myo_max_b = 3*sqrt(principle_dia_sys_myo_eigenvalues);
 
 % Calculate new shapes for visualisation
 % mean shape + the sum of each eigenvector times it's value of b
@@ -293,17 +327,22 @@ for n = 1 : nEigenmodes
     sys_myo_new_shape_max(:,n) = sys_myo_mean(:) + principle_sys_myo_eigenvectors(:,n)*sys_myo_max_b(n,1);
     dia_myo_new_shape_min(:,n) = dia_myo_mean(:) + principle_dia_myo_eigenvectors(:,n)*dia_myo_min_b(n,1);
     dia_myo_new_shape_max(:,n) = dia_myo_mean(:) + principle_dia_myo_eigenvectors(:,n)*dia_myo_max_b(n,1);
+    dia_sys_myo_new_shape_min(:,n) = dia_sys_myo_mean(:) + principle_dia_sys_myo_eigenvectors(:,n)*dia_sys_myo_min_b(n,1);
+    dia_sys_myo_new_shape_max(:,n) = dia_sys_myo_mean(:) + principle_dia_sys_myo_eigenvectors(:,n)*dia_sys_myo_max_b(n,1);
+    
     
 end
 
 disp('finished PCA')
+toc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Point distribution model (PDM)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%7
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+disp('started point distribution model')
 % find mean shapes
 mean_diastolic_myo_shape = mean(training_diastolic_myo_shapes);
 mean_systolic_myo_shape = mean(training_systolic_myo_shapes);
+mean_dia_sys_myo_shape = mean(training_dia_sys_myo_shapes);
 
 % find b values for the DETERMINE and MESA cases
 for b = 1:5
@@ -312,6 +351,8 @@ for b = 1:5
             
             DETERMINE_dia_myo_b(d,b) = (principle_dia_myo_eigenvectors(:,b)')*(data(i).diastolic.myo.xyz(:) - mean_diastolic_myo_shape');
             DETERMINE_sys_myo_b(d,b) = (principle_sys_myo_eigenvectors(:,b)')*(data(i).systolic.myo.xyz(:) - mean_systolic_myo_shape');
+           DETERMINE_dia_sys_myo_b(d,b) = (principle_dia_sys_myo_eigenvectors(:,b)')*(data(i).dia_sys.myo.xyz(:) - mean_dia_sys_myo_shape');
+
         end
     end
     
@@ -320,12 +361,13 @@ for b = 1:5
             %         d
             MESA_dia_myo_b(d,b) = (principle_dia_myo_eigenvectors(:,b)')*(data(i).diastolic.myo.xyz(:) - mean_diastolic_myo_shape');
             MESA_sys_myo_b(d,b) = (principle_sys_myo_eigenvectors(:,b)')*(data(i).systolic.myo.xyz(:) - mean_systolic_myo_shape');
-            
+                       MESA_dia_sys_myo_b(d,b) = (principle_dia_sys_myo_eigenvectors(:,b)')*(data(i).dia_sys.myo.xyz(:) - mean_dia_sys_myo_shape');
+
         end
     end
     
 end
-
+disp('finished point distribution model')
 %% visualise modes
 
 f1= figure;
@@ -335,54 +377,74 @@ pause
 for n = 1:2
     for c = -1:0.1:1
         
-         dia_myo_new_shape(:,1) = dia_myo_mean(:) + principle_dia_myo_eigenvectors(:,2)*c*dia_myo_max_b(2,1);
-        dia_myo_new_shape(:,2) = dia_myo_mean(:) + principle_dia_myo_eigenvectors(:,4)*c*dia_myo_max_b(4,1);
-        %
-        
-        subplot 223
-        plot3D(reshape(dia_myo_mean,[2178 , 3]))
+%          dia_myo_new_shape(:,1) = dia_myo_mean(:) + principle_dia_myo_eigenvectors(:,2)*c*dia_myo_max_b(2,1);
+%         dia_myo_new_shape(:,2) = dia_myo_mean(:) + principle_dia_myo_eigenvectors(:,4)*c*dia_myo_max_b(4,1);
+% 
+%         %
+%         
+%         subplot 223
+%         plot3D(reshape(dia_myo_mean,[2178 , 3]))
+% %         set(gca ,'XLim',[-50, 10], 'YLim', [-50 10], 'ZLim', [-80, 0])
+%         xlabel 'x', ylabel 'y', zlabel 'z'
+%         hold on
+%         plot3D(reshape(dia_myo_new_shape(:,1), [2178 3]))
+% %         set(gca ,'XLim',[-50, 10], 'YLim', [-50 10], 'ZLim', [-80, 30])
+%         hold off
+%         legend 'mean' 'mode2'
+%         
+%         subplot 224
+%         plot3D(reshape(dia_myo_mean,[2178 , 3]))
+% %         set(gca ,'XLim',[-50, 10], 'YLim', [-50 10], 'ZLim', [-80, 0])
+%         xlabel 'x', ylabel 'y', zlabel 'z'
+%         hold on
+%         plot3D(reshape(dia_myo_new_shape(:,2), [2178 3]))
+% %         set(gca ,'XLim',[-50, 10], 'YLim', [-50 10], 'ZLim', [-80,30])
+%         legend 'mean' 'mode4'
+%         pause(0.3)
+%         
+%         
+%         
+%         
+%         
+%         sys_myo_new_shape(:,1) = sys_myo_mean(:) + principle_sys_myo_eigenvectors(:,1)*c*sys_myo_max_b(1,1);
+%         sys_myo_new_shape(:,2) = sys_myo_mean(:) + principle_sys_myo_eigenvectors(:,4)*c*sys_myo_max_b(4,1);
+%         %
+%         
+%         figure
+%         subplot 121
+%         plot3D(reshape(sys_myo_mean,[2178 , 3]))
 %         set(gca ,'XLim',[-50, 10], 'YLim', [-50 10], 'ZLim', [-80, 0])
-        xlabel 'x', ylabel 'y', zlabel 'z'
-        hold on
-        plot3D(reshape(dia_myo_new_shape(:,1), [2178 3]))
+%         xlabel 'x', ylabel 'y', zlabel 'z'
+%         hold on
+%         plot3D(reshape(sys_myo_new_shape(:,1), [2178 3]))
 %         set(gca ,'XLim',[-50, 10], 'YLim', [-50 10], 'ZLim', [-80, 30])
-        hold off
-        legend 'mean' 'mode2'
-        
-        subplot 224
-        plot3D(reshape(dia_myo_mean,[2178 , 3]))
+%         hold off
+%         legend 'mean' 'mode1'
+%         
+%         subplot 122
+%         plot3D(reshape(sys_myo_mean,[2178 , 3]))
 %         set(gca ,'XLim',[-50, 10], 'YLim', [-50 10], 'ZLim', [-80, 0])
-        xlabel 'x', ylabel 'y', zlabel 'z'
-        hold on
-        plot3D(reshape(dia_myo_new_shape(:,2), [2178 3]))
+%         xlabel 'x', ylabel 'y', zlabel 'z'
+%         hold on
+%         plot3D(reshape(sys_myo_new_shape(:,2), [2178 3]))
 %         set(gca ,'XLim',[-50, 10], 'YLim', [-50 10], 'ZLim', [-80,30])
-        legend 'mean' 'mode4'
-        pause(0.3)
+%         legend 'mean' 'mode4'
+%         pause(0.3)
+%         axis equal
+%         
+%         hold off
         
-        
-        
-        
-        
-        sys_myo_new_shape(:,1) = sys_myo_mean(:) + principle_sys_myo_eigenvectors(:,1)*c*sys_myo_max_b(1,1);
-        sys_myo_new_shape(:,2) = sys_myo_mean(:) + principle_sys_myo_eigenvectors(:,4)*c*sys_myo_max_b(4,1);
-        %
-        
-        subplot 121
-        plot3D(reshape(sys_myo_mean,[2178 , 3]))
+        dia_sys_myo_new_shape(:,1) = dia_sys_myo_mean(:) + principle_dia_sys_myo_eigenvectors(:,1)*c*dia_sys_myo_max_b(1);
+        dia_sys_myo_new_shape(:,2) = dia_sys_myo_mean(:) + principle_dia_sys_myo_eigenvectors(:,2)*-c*dia_sys_myo_max_b(2);
+
+    
+        plot3D(reshape(dia_sys_myo_mean,[2*2178 , 3]))
         set(gca ,'XLim',[-50, 10], 'YLim', [-50 10], 'ZLim', [-80, 0])
         xlabel 'x', ylabel 'y', zlabel 'z'
-        hold on
-        plot3D(reshape(sys_myo_new_shape(:,1), [2178 3]))
-        set(gca ,'XLim',[-50, 10], 'YLim', [-50 10], 'ZLim', [-80, 30])
-        hold off
-        legend 'mean' 'mode1'
-        
-        subplot 122
-        plot3D(reshape(sys_myo_mean,[2178 , 3]))
-        set(gca ,'XLim',[-50, 10], 'YLim', [-50 10], 'ZLim', [-80, 0])
-        xlabel 'x', ylabel 'y', zlabel 'z'
-        hold on
-        plot3D(reshape(sys_myo_new_shape(:,2), [2178 3]))
+    hold on
+        mode = 2;
+%         plot3D(reshape(dia_sys_myo_new_shape(:,mode), [2*2178 3]))
+        patch('vertices',reshape(dia_sys_myo_new_shape(:,mode), [2*2178 3]),'faces'
         set(gca ,'XLim',[-50, 10], 'YLim', [-50 10], 'ZLim', [-80,30])
         legend 'mean' 'mode4'
         pause(0.3)
@@ -390,6 +452,31 @@ for n = 1:2
         
         hold off
     end
+    
+    
+    for c = -1:0.1:1
+        
+       
+        dia_sys_myo_new_shape(:,1) = dia_sys_myo_mean(:) + principle_dia_sys_myo_eigenvectors(:,1)*-c*dia_sys_myo_max_b(1);
+        dia_sys_myo_new_shape(:,2) = dia_sys_myo_mean(:) + principle_dia_sys_myo_eigenvectors(:,2)*c*dia_sys_myo_max_b(2);
+
+    
+        plot3D(reshape(dia_sys_myo_mean,[2*2178 , 3]))
+        set(gca ,'XLim',[-50, 10], 'YLim', [-50 10], 'ZLim', [-80, 0])
+        xlabel 'x', ylabel 'y', zlabel 'z'
+    hold on
+        mode = 2;
+        plot3D(reshape(dia_sys_myo_new_shape(:,mode), [2*2178 3]))
+        set(gca ,'XLim',[-50, 10], 'YLim', [-50 10], 'ZLim', [-80,30])
+        legend 'mean' 'mode4'
+        pause(0.3)
+        axis equal
+        
+        hold off
+    end
+    
+        
+        
 end
 
 %%

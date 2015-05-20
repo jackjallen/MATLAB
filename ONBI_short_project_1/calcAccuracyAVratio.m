@@ -1,25 +1,24 @@
-function[data, accuracy, sensitivity, specificity] = calcAccuracy(data, positive, negative,accMin,accMax,factor)
-% 
-% for n = 1:100
-%     n
-%     for d = data(1).DETERMINE_indices(n)
-%        d
-%         positive(n) = data(d).ejectionFraction;       
-%     end
-%     for m = data(1).MESA_indices(n)
-%       m
-%         negative(n) = data(m).ejectionFraction;       
-%     end
-%     
-% end
+function[data, accuracy, sensitivity, specificity] = calcAccuracyAVratio(data)
 
-positive(1,:) = positive(:)*factor;
-negative(1,:) = negative(:)*factor;
+for n = 1:100
+    n;
+    for d = data(1).DETERMINE_indices(n)
+       d;
+        positive(n) = cell2mat({data(d).DETERMINE_sys_endo_AVratio});     
+    end
+    for m = data(1).MESA_indices(n)
+      m;
+        negative(n) = cell2mat({data(m).MESA_sys_endo_AVratio});
+    end
+    
+end
+positive =  positive;
+negative = negative;
 
-for i = accMin:accMax
+for i = 1:50
     % if we class over threshold as MESA ('negative') and under threshold as
     % DETERMINE ('positive')
-    i;
+    
     
     nfalse_negative = sum(positive>i);
     ntrue_negative = sum(negative>i);
