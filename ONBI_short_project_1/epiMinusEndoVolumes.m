@@ -6,8 +6,8 @@ for i = 1:401
     
     for d = 1:100
         if data(1).DETERMINE_indices(d)==i
-            data(i).DETERMINE.diastolic.epiMinusEndoVolume = data(i).diastolic.epiMinusEndoVolume
-            data(i).DETERMINE.systolic.epiMinusEndoVolume = data(i).systolic.epiMinusEndoVolume
+            data(i).DETERMINE.diastolic.epiMinusEndoVolume = data(i).diastolic.epiMinusEndoVolume;
+            data(i).DETERMINE.systolic.epiMinusEndoVolume = data(i).systolic.epiMinusEndoVolume;
             
             
         else
@@ -18,8 +18,8 @@ for i = 1:401
         if data(1).MESA_indices(d)==i
             %         i;
             %         m;
-            data(i).MESA.diastolic.epiMinusEndoVolume = data(i).diastolic.epiMinusEndoVolume
-            data(i).MESA.systolic.epiMinusEndoVolume = data(i).systolic.epiMinusEndoVolume
+            data(i).MESA.diastolic.epiMinusEndoVolume = data(i).diastolic.epiMinusEndoVolume;
+            data(i).MESA.systolic.epiMinusEndoVolume = data(i).systolic.epiMinusEndoVolume;
             
             
             

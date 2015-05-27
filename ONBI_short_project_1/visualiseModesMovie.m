@@ -27,7 +27,7 @@ end
         title (['diastolic, mode ', num2str(mode) ])
         
         xlabel 'x', ylabel 'y', zlabel 'z'
-       patch('vertices', dia, 'faces', data(1).diastolic.full.tri, 'facecolor', 'r', 'facealpha', '0.4', 'edgecolor', 'none','FaceLighting','gouraud')
+       patch('vertices', dia, 'faces', data(1).diastolic.full.tri, 'facecolor', 'r', 'facealpha', '0.4', 'edgecolor', 'none','FaceLighting','gouraud',  'clipping','off')
         camlight('right')
         %     plot3D(dia)
         view(225, 40)
@@ -64,7 +64,7 @@ end
         
         c = c
         figure
-        dia_sys_myo_new_shape(:,mode) = dia_sys_myo_mean(1,:)' + principle_dia_sys_myo_eigenvectors(:,mode)*c*dia_sys_myo_max_b(mode,1);
+        dia_sys_myo_new_shape(:,mode) = dia_sys_myo_mean(1,:)' + principle_dia_sys_myo_eigenvectors(:,mode)*c*0.1*dia_sys_myo_max_b(mode,1);
         
         dia_sys = reshape(dia_sys_myo_new_shape(:,mode), [2*2178 , 3]);
         sys = dia_sys(2179:end,:);
@@ -76,7 +76,7 @@ end
         title (['systolic, mode ', num2str(mode) ])
         
         xlabel 'x', ylabel 'y', zlabel 'z'
-        patch('vertices', sys, 'faces', data(1).systolic.full.tri, 'facecolor', 'r', 'facealpha', '0.4', 'edgecolor', 'none','FaceLighting','gouraud') % 'clipping', 'off') %'specularstrength', 1)
+        patch('vertices', sys, 'faces', data(1).systolic.full.tri, 'facecolor', 'r', 'facealpha', '0.4', 'edgecolor', 'none','FaceLighting','gouraud', 'clipping', 'off') %'specularstrength', 1)
         camlight('right')
      axis tight
         %             plot3D(sys)

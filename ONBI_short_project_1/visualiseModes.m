@@ -29,7 +29,7 @@ end
         title (['diastolic, mode ', num2str(mode) ])
         
         xlabel 'x', ylabel 'y', zlabel 'z'
-       patch('vertices', dia, 'faces', data(1).diastolic.full.tri, 'facecolor', 'r', 'facealpha', '0.4', 'edgecolor', 'none','FaceLighting','gouraud')
+       patch('vertices', dia, 'faces', data(1).diastolic.full.tri, 'facecolor', 'r', 'facealpha', '0.4', 'edgecolor', 'none','FaceLighting','gouraud', 'clipping','off')
         camlight('right')
         %     plot3D(dia)
         view(225, 40)
@@ -54,7 +54,7 @@ end
         
         xlabel 'x', ylabel 'y', zlabel 'z'
         %      plot3D(dia)
-        patch('vertices', dia, 'faces', data(1).diastolic.full.tri, 'facecolor', 'r', 'facealpha', '0.4', 'edgecolor', 'none','FaceLighting','gouraud')
+        patch('vertices', dia, 'faces', data(1).diastolic.full.tri, 'facecolor', 'r', 'facealpha', '0.4', 'edgecolor', 'none','FaceLighting','gouraud',  'clipping','off')
         camlight('right')
         view(225, 40)
         axis ([x(1) x(2) y(1) y(2) z(1) z(2)])
@@ -78,7 +78,7 @@ end
         title (['systolic, mode ', num2str(mode) ])
         
         xlabel 'x', ylabel 'y', zlabel 'z'
-        patch('vertices', sys, 'faces', data(1).systolic.full.tri, 'facecolor', 'r', 'facealpha', '0.4', 'edgecolor', 'none','FaceLighting','gouraud') % 'clipping', 'off') %'specularstrength', 1)
+        patch('vertices', sys, 'faces', data(1).systolic.full.tri, 'facecolor', 'r', 'facealpha', '0.4', 'edgecolor', 'none','FaceLighting','gouraud', 'clipping', 'off') %'specularstrength', 1)
         camlight('right')
      axis tight
         %             plot3D(sys)
@@ -100,7 +100,7 @@ end
         title (['systolic, mode ', num2str(mode) ])
         
         xlabel 'x', ylabel 'y', zlabel 'z'
-        patch('vertices', sys, 'faces', data(1).systolic.full.tri, 'facecolor', 'r', 'facealpha', '0.4', 'edgecolor', 'none','FaceLighting','gouraud')
+        patch('vertices', sys, 'faces', data(1).systolic.full.tri, 'facecolor', 'r', 'facealpha', '0.4', 'edgecolor', 'none','FaceLighting','gouraud', 'clipping','off')
         camlight('right')
         %       plot3D(sys)
         view(225, 40)
