@@ -11,7 +11,7 @@ end
 
     function VisualiseDiastolicModes(data, dia_sys_myo_mean, principle_dia_sys_myo_eigenvectors, dia_sys_myo_max_b, stage, mode, c, x, y, z)
         
-        h1 =  subplot(1,2,1)
+        h1 =  subplot(1,2,1);
         %         subplot 121
         cla(h1)
        
@@ -24,7 +24,7 @@ end
 %         x = [-70 ; 40];
 %         y = [-65 ; 35];
 %         z = [-110 ; 40];
-        mode = mode
+        mode = mode;
         
         title (['diastolic, mode ', num2str(mode) ])
         
@@ -37,7 +37,7 @@ end
         
         
         %         subplot 122
-        h2 =  subplot(1,2,2)
+        h2 =  subplot(1,2,2);
         cla(h2)
        
         
@@ -49,7 +49,7 @@ end
 %         x = [-70 ; 40];
 %         y = [-65 ; 35];
 %         z = [-110 ; 40];
-        mode = mode
+        mode = mode;
         title (['diastolic, mode ', num2str(mode) ])
         
         xlabel 'x', ylabel 'y', zlabel 'z'

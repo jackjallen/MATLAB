@@ -687,7 +687,27 @@ trainingdata(:,28) = [diaModeT(data(1).DETERMINE_indices)' ; diaModeT(data(1).ME
 trainingdata(:,29) = [sysModeT(data(1).DETERMINE_indices)' ; sysModeT(data(1).MESA_indices)'];
 trainingdata(:,30) = [sysMedianT(data(1).DETERMINE_indices)' ; sysMedianT(data(1).MESA_indices)'];
 
-% trainingdataLabels = ['EF' ; 'sys myo b1' ; 'sys myo b2' ;  'sys myo b1'
+
+
+trainingdataLabels = ['EF              ' ;...
+    'sys myo b1      ' ;...
+    'sys myo b2      ' ;...
+    'sys myo b3      ' ;...
+    'sys myo b4      ' ;...
+    'sys myo b5      ' ;...
+    'dia myo b1      ' ;...
+    'dia myo b2      ' ;...
+    'dia myo b3      ' ;...
+    'dia myo b4      ' ;...
+    'dia myo b5      ' ;...
+    'dia sys myo b1  ' ;...
+    'dia sys myo b2  ' ;...
+    'dia sys myo b3' ; 'dia sys myo b4' ; 'dia sys myo b5'; ...
+    'dia sys myo b6  ' ; 'dia sys myo b7' ; 'dia sys myo b8' ; 'dia sys myo b9' ; 'dia sys myo b10'; ...
+     'dia endo AV ratio' ; 'sys endo AV ratio' ; 'dia dEPI2ENDO vars' ; 'deltaTmean' ; 'diaMeanT' ; ...
+     'sysMeanT' ; 'diaModeT' ; 'sysModeT' ; 'sysMedianT']
+     
+    
 
 names = char(200,1);
 names(1:100,1) = 'd';
@@ -763,7 +783,7 @@ plot([0 30],[max(max(LDAclassification_rates)) max(max(LDAclassification_rates))
 legend (['max classification = ' num2str(max(max(LDAclassification_rates)))])
 hold on
 plot([0 30],[0.87 0.87])
-bar(LDAclassification_rates(:,1))
+bar(traininglabelsLDAclassification_rates(:,1))
 ylabel 'classification success'
 ylim ([0.85 1])
 xlim ([1 30])
@@ -780,7 +800,7 @@ title 'EF + ...'
 
 %% LDA - 3 parameters
 LDAclassification_rates =  zeros(size(param1,2),size(param2,2));
-for param1 = 2:24
+for param1 = 2:30
     for param2 = 28
         for param3 = 1 % param3 is EF
             tic
@@ -792,16 +812,15 @@ for param1 = 2:24
     end
 end
 
-figure
-% subplot 121
-plot([0 25],[max(max(LDAclassification_rates)) max(max(LDAclassification_rates))])
-legend (['max classification = ' num2str(max(max(LDAclassification_rates)))]) 
 hold on
-plot([0 25],[0.87 0.87])
-bar(LDAclassification_rates(:,1))
+% subplot 121
+plot([0 30],[max(max(LDAclassification_rates)) max(max(LDAclassification_rates))])
+legend (['max classification = ' num2str(max(max(LDAclassification_rates)))]) 
+plot([0 30],[0.87 0.87])
+plot(LDAclassification_rates(:,28),'o')
 ylabel 'classification success'
 ylim ([0.85 1])
-xlim ([1 24])
+xlim ([1 30])
 xlabel 'training data column (parameter index)'
 set(gca,'yMinorTick','on')
 title 'EF + systolic endocardium area to volume ratio + ...'
