@@ -37,12 +37,22 @@ for i = 1:401
     [~,~,data(i).dia_dEPI2ENDO] = vtkClosestElement( data(i).diastolic.endo , data(i).diastolic.epi.xyz );
     [~,~,data(i).sys_dEPI2ENDO] = vtkClosestElement( data(i).systolic.endo , data(i).systolic.epi.xyz );
     
-    %standard deviations
+    diastolicEndos(i,:) = data(i).diastolic.endo.xyz(:);
+    systolicEndos(i,:)= data(i).systolic.endo.xyz(:);
+    diastolicEpis(i,:) = data(i).diastolic.epi.xyz(:);
+    systolicEpis(i,:)= data(i).systolic.epi.xyz(:);
+    
+    dia_dEPI2ENDOs(i,:) = data(i).dia_dEPI2ENDO;
+    sys_dEPI2ENDOs(i,:) = data(i).sys_dEPI2ENDO;
+    
+    
+    
+    
     data(i).dia_dEPI2ENDO_vars = var(data(i).dia_dEPI2ENDO);
     data(i).sys_dEPI2ENDO_vars = var(data(i).sys_dEPI2ENDO);
     
     data(i).dia_dEPI2ENDO_stds = sqrt(data(i).dia_dEPI2ENDO_vars);
-     data(i).sys_dEPI2ENDO_stds = sqrt(data(i).sys_dEPI2ENDO_vars);
+    data(i).sys_dEPI2ENDO_stds = sqrt(data(i).sys_dEPI2ENDO_vars);
      
     data(i).myo_T_changes = data(i).sys_dEPI2ENDO - data(i).dia_dEPI2ENDO;
    
@@ -58,6 +68,56 @@ for i = 1:401
     sysModeT(i) = mode(data(i).sys_dEPI2ENDO);
     
 end
+
+DETERMINEmeanDiaEndo = mean(diastolicEndos(data(1).DETERMINE_indices,:),1);
+DETERMINEmeanDiaEpi = mean(diastolicEpis(data(1).DETERMINE_indices,:),1);
+DETERMINEmeanDiaT = mean(dia_dEPI2ENDOs(data(1).DETERMINE_indices,:),1);
+MESAmeanDiaEndo = mean(diastolicEndos(data(1).MESA_indices,:),1);
+MESAmeanDiaEpi = mean(diastolicEpis(data(1).MESA_indices,:),1);
+MESAmeanDiaT = mean(dia_dEPI2ENDOs(data(1).MESA_indices,:),1);
+
+DETERMINEmeanSysEndo = mean(systolicEndos(data(1).DETERMINE_indices,:),1);
+DETERMINEmeanSysEpi = mean(systolicEpis(data(1).DETERMINE_indices,:),1);
+DETERMINEmeanSysT = mean(sys_dEPI2ENDOs(data(1).DETERMINE_indices,:),1);
+MESAmeanSysEndo = mean(systolicEndos(data(1).MESA_indices,:),1);
+MESAmeanSysEpi = mean(systolicEpis(data(1).MESA_indices,:),1);
+MESAmeanSysT = mean(sys_dEPI2ENDOs(data(1).MESA_indices,:),1);
+
+%%
+figure;
+subplot 221
+title 'DETERMINE - MEAN DIASTOLE'
+patch( 'vertices',reshape(DETERMINEmeanDiaEpi,[1089,3]),'faces',data(401).diastolic.epi.tri,'facecolor','interp','cdata',DETERMINEmeanDiaT,'edgecolor','none')%[1 1 1]*0.2)
+axis equal;
+view(3);
+colormap jet
+colorbar
+caxis([1 16])
+subplot 222
+title 'MESA - MEAN DIASTOLE'
+patch( 'vertices',reshape(MESAmeanDiaEpi,[1089,3]),'faces',data(401).diastolic.epi.tri,'facecolor','interp','cdata',MESAmeanDiaT,'edgecolor','none')%[1 1 1]*0.2)
+axis equal;
+view(3);
+colormap jet
+colorbar 
+caxis([1 16])
+
+subplot 223
+title 'DETERMINE - MEAN SYSTOLE'
+patch( 'vertices',reshape(DETERMINEmeanSysEpi,[1089,3]),'faces',data(401).systolic.epi.tri,'facecolor','interp','cdata',DETERMINEmeanSysT,'edgecolor','none')%[1 1 1]*0.2)
+axis equal;
+view(3);
+colormap jet
+colorbar
+caxis([1 16])
+subplot 224
+title 'MESA - MEAN SYSTOLE'
+patch( 'vertices',reshape(MESAmeanSysEpi,[1089,3]),'faces',data(401).systolic.epi.tri,'facecolor','interp','cdata',MESAmeanSysT,'edgecolor','none')%[1 1 1]*0.2)
+axis equal;
+view(3);
+colormap jet
+colorbar 
+caxis([1 16])
 %% plot myo thickness stats
 figure
 subplot 121
@@ -551,7 +611,6 @@ sys_myo_max_b = 3*sqrt(principle_sys_myo_eigenvalues);
 dia_sys_myo_min_b = - 3*sqrt(principle_dia_sys_myo_eigenvalues);
 dia_sys_myo_max_b = 3*sqrt(principle_dia_sys_myo_eigenvalues);
 
-
 disp('finished PCA')
 toc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -584,13 +643,13 @@ for b = 1:10
             
         end
     end
-    
 end
 disp('finished point distribution model')
 %% visualise modes
 
+
 %% visualise mode variations
-eMode = 3
+eMode = 2
 stage = 'sys'
 %animation
 for n= 1
@@ -731,7 +790,7 @@ names(101:200,1) = 'm';
 
 %% visualise training data
 bestParam3 = 1 %EF
-b = [bestParam1;bestParam2;bestParam3]';
+b = [bestParam1(1);bestParam2(1);bestParam3]';
 figure
 hold on
 %histogram(trainingdata(1:100,b))
@@ -744,7 +803,7 @@ ylabel ([ num2str(bestParam2) ])
 zlabel ([ num2str(bestParam3) ' (EF) '])
 
 %% svmtrain (will be removed from later versions of matlab)
-svmStruct = svmtrain(trainingdata(:,[bestParam1;bestParam2]),names,'ShowPlot', true, 'kernel_function', 'linear');
+svmStruct = svmtrain(trainingdata(:,[bestParam1(1);bestParam2(1)]),names,'ShowPlot', true, 'kernel_function', 'linear');
 %
 
 %% SVM - 3 parameters
@@ -799,7 +858,7 @@ hold on
 plot([0 30],[0.87 0.87])
 bar( LDAclassification_rates(:,1))
 ylabel 'classification success'
-ylim ([0.85 1])
+ylim ([0.8 1])
 xlim ([1 30])
 set(gca,'XTick',[1:1:30])
 % set(gca,'XTickLabel',trainingdataLabels)
@@ -815,7 +874,7 @@ title 'EF + ...'
 [best2] = trainingdataLabels(bestParam2,:)
 %% LDA - 3 parameters
 LDAclassification_rates =  zeros(size(param1,2),size(param2,2));
-for param1 = 2:30
+for param1 = 1:30
     for param2 = 28
         for param3 = 1 % param3 is EF
             tic
@@ -834,7 +893,7 @@ legend (['max classification = ' num2str(max(max(LDAclassification_rates)))])
 plot([0 30],[0.87 0.87])
 plot(LDAclassification_rates(:,28),'o')
 ylabel 'classification success'
-ylim ([0.85 1])
+ylim ([0.8 1])
 xlim ([1 30])
 xlabel 'training data column (parameter index)'
 set(gca,'yMinorTick','on')
