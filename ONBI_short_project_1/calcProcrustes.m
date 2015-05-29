@@ -11,7 +11,7 @@ for p = 1:pI
     % iterate so that procrustes is performed on each case (400 patients).
     
     %     for n = 1:200
-    for   i = concatIndices(1:end-1)';
+    for   i = concatIndices(1:end)';
         % % transform endo and epi (individually)
         % [data(i).diastolic.endo.procrustes_d, data(i).diastolic.endo.xyz] = procrustes(dia_endo_reference, data(i).diastolic.endo.xyz(:));
         % [data(i).diastolic.epi.procrustes_d, data(i).diastolic.epi.xyz] = procrustes(dia_epi_reference, data(i).diastolic.epi.xyz(:));

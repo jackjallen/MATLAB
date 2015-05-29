@@ -86,6 +86,44 @@ MESAmeanSysT = mean(sys_dEPI2ENDOs(data(1).MESA_indices,:),1);
 %%
 figure;
 subplot 221
+title 'DETERMINE - VARIANCE OF EACH DISTANCE (1089) OVER THE POPULATION'
+patch( 'vertices',reshape(DETERMINEmeanDiaEpi,[1089,3]),'faces',data(401).diastolic.epi.tri,'facecolor','interp','cdata',  ,'edgecolor','none')%[1 1 1]*0.2)
+axis equal;
+view(3);
+colormap jet
+colorbar
+caxis([-3 7])
+subplot 222
+title 'MESA - '
+patch( 'vertices',reshape(DETERMINEmeanDiaEpi,[1089,3]),'faces',data(401).diastolic.epi.tri,'facecolor','interp','cdata',  'edgecolor','none')%[1 1 1]*0.2)
+axis equal;
+view(3);
+colormap jet
+colorbar 
+caxis([-3 7])
+
+
+figure;
+subplot 221
+title 'DETERMINE - mean myo thickness change'
+patch( 'vertices',reshape(DETERMINEmeanDiaEpi,[1089,3]),'faces',data(401).diastolic.epi.tri,'facecolor','interp','cdata',mean(cell2mat({data(data(1).DETERMINE_indices).myo_T_changes}),2),'edgecolor','none')%[1 1 1]*0.2)
+axis equal;
+view(3);
+colormap jet
+colorbar
+caxis([-3 7])
+subplot 222
+title 'MESA - mean myo thickness change'
+patch( 'vertices',reshape(DETERMINEmeanDiaEpi,[1089,3]),'faces',data(401).diastolic.epi.tri,'facecolor','interp','cdata',mean(cell2mat({data(data(1).MESA_indices).myo_T_changes}),2),'edgecolor','none')%[1 1 1]*0.2)
+axis equal;
+view(3);
+colormap jet
+colorbar 
+caxis([-3 7])
+
+
+figure;
+subplot 221
 title 'DETERMINE - MEAN DIASTOLE'
 patch( 'vertices',reshape(DETERMINEmeanDiaEpi,[1089,3]),'faces',data(401).diastolic.epi.tri,'facecolor','interp','cdata',DETERMINEmeanDiaT,'edgecolor','none')%[1 1 1]*0.2)
 axis equal;
@@ -681,7 +719,7 @@ for n= 1
 end
 
 %% static
-close all
+% close all
 eMode = 9
 c = 1
 x = [-60 ; 40];
