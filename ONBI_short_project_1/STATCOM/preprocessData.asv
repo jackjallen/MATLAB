@@ -127,8 +127,8 @@ end
 % EPI = getPiece( SUBJECTS{1,4} , 2 );
 % EPI.xyz = reshape(DETERMINEmeanSysEpi,[1089 3]);
 dia_myo_mean = reshape(dia_myo_mean, [2178 , 3]);
-dia_epi_mean = dia_myo_mean(1090:end,:) ; 
-dia_endo_mean = dia_myo_mean(1:1089,:) ;
+dia_epi_mean = dia_myo_mean(1090:end,:)
+dia_endo_mean = dia_myo_mean(1:1089,:)
 hold on
 plot3D(dia_endo_mean,'o')
 plot3D(dia_epi_mean,'o')
@@ -158,6 +158,7 @@ rings{2} = r2;
 
 clear meridian
 for m = 1:numel( rings{2} )
+
     
   meridian(m,1) = APEXid;
   meridian(m,2) = rings{2}(m);
@@ -184,13 +185,15 @@ for m = 1:numel( rings{2} )
 end
 %%
 
+
 %%
 ENDO.xyz = dia_endo_mean;
 ENDO.tri = EPI.tri;
 ENDO = TidyMesh(ENDO)
 % ENDO = data(1).diastolic.endo
-[~,~,dEPI2ENDO] = vtkClosestElement( ENDO , EPI.xyz )
+[~,~,dia_dEPI2ENDO] = vtkClosestElement( ENDO , EPI.xyz )
 % [~,~,dia_dENDO2EPI] = vtkClosestElement( EPI , ENDO.xyz )
+
 
 figure; subplot 121
 hold on
@@ -210,27 +213,43 @@ THETA = linspace( 0 , 2*pi , size( meridian , 1 )+1 );
 X     = bsxfun( @times , R , cos(THETA).' );
 Y     = bsxfun( @times , R , sin(THETA).' );
 
-normaliseddEPI2ENDO = dia_dEPI2ENDO/max(max(v([1:end 1],:)))
-v = normaliseddEPI2ENDO( meridian )
+ v = dia_dEPI2ENDO( meridian )
+
+% DETERMINEdiaMeanMyoT =  mean(dia_dEPI2ENDOs(data(1).DETERMINE_indices,:),1) ;
+% MESAdiaMeanMyoT =  mean(dia_dEPI2ENDOs(data(1).MESA_indices,:),1) ;
+% v = DETERMINEdiaMeanMyoT( meridian )
+% v = MESAdiaMeanMyoT( meridian )
 
 figure
 subplot 121
-patch('vertices',EPI.xyz, 'faces', EPI.tri,'facecolor','interp','cdata',normaliseddEPI2ENDO)
-view(3)
+surf( X , Y , v([1:end 1],:) ,'facecolor','interp'); view(2)
 axis equal
-cmin = min(min(normaliseddEPI2ENDO([1:end 1],:)))
-cmax = max(max(normaliseddEPI2ENDO([1:end 1],:)))
+cmin = min(min(v([1:end 1],:)))
+cmax = max(max(v([1:end 1],:)))
 caxis ([ cmin cmax])
-title 'mean diastole shape for all training shapes'
+axis ([-1 1 -1 1])
+title 'DETERMINE mean systole myocardium thickness'
+title 'MESA mean systole myocardium thickness'
 xlabel 'x'
 ylabel 'y'
 zlabel 'z'
-subplot 122
+
+DETERMINEsysMeanMyoT =  mean(sys_dEPI2ENDOs(data(1).DETERMINE_indices,:),1) ;
+MESAsysMeanMyoT =  mean(sys_dEPI2ENDOs(data(1).MESA_indices,:),1) ;
+
+v = DETERMINEsysMeanMyoT( meridian )
+v = MESAsysMeanMyoT( meridian )
+figure
+subplot 223
+subplot 224
 surf( X , Y , v([1:end 1],:) ,'facecolor','interp'); view(2)
 axis ([-1 1 -1 1])
 cmin = min(min(v([1:end 1],:)))
 cmax = max(max(v([1:end 1],:)))
-caxis ([cmin cmax])
+caxis ([ -14 14])
 title 'myocardium thickness'
+title 'MESA mean diastole myocardium thickness'
+title 'mean diastole training shape'
+
 c = colorbar
-c.Label.String = 'normalised thickness'
+c.Label.String = 'myocardium thickness (mm)'
