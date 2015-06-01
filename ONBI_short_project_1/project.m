@@ -32,9 +32,9 @@ data(1).MESA_indices(2) = 401 ; % replace SMM0001 with the replacement provided 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% CALCULATE MYOCARDIUM THICKNESS (DISTANCE BETWEEN EPI AND ENDO)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+disp('start myo thicknesses')
 run('calc_myocardium_thicknesses.m')
-
+disp('finished myo thicknesses')
 %%
 figure;
 subplot 221
@@ -51,7 +51,7 @@ patch( 'vertices',reshape(DETERMINEmeanDiaEpi,[1089,3]),'faces',data(401).diasto
 axis equal;
 view(3);
 colormap jet
-colorbar 
+colorbar
 caxis([-3 7])
 
 
@@ -70,7 +70,7 @@ patch( 'vertices',reshape(DETERMINEmeanDiaEpi,[1089,3]),'faces',data(401).diasto
 axis equal;
 view(3);
 colormap jet
-colorbar 
+colorbar
 caxis([-3 7])
 
 
@@ -89,7 +89,7 @@ patch( 'vertices',reshape(MESAmeanDiaEpi,[1089,3]),'faces',data(401).diastolic.e
 axis equal;
 view(3);
 colormap jet
-colorbar 
+colorbar
 caxis([1 16])
 
 subplot 223
@@ -106,7 +106,7 @@ patch( 'vertices',reshape(MESAmeanSysEpi,[1089,3]),'faces',data(401).systolic.ep
 axis equal;
 view(3);
 colormap jet
-colorbar 
+colorbar
 caxis([1 16])
 %% plot myo thickness stats
 figure
@@ -212,19 +212,15 @@ xlabel 'sys dEPI2ENDO standard deviations'
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % when run after calcVolumes() etc,this gives warnings...
 
-disp('calculating myocardium volumes')
+disp('start making myo shapes')
 
 %load struct containing the triangle file for the myo 'donut' shaped lid
 load('C:\Users\jesu2687\Documents\MATLAB\ONBI_short_project_1\myoB_tri.mat')
 
 % make myo shapes (using code from 'calcMyoVolume()' )
-%  [data] = calcMyoVolume(data, myoB);
-for i = 1:401
-data(i).diastolic.full.xyz = [data(i).diastolic.endo.xyz ; data(i).diastolic.epi.xyz ];
-data(i).diastolic.full.tri = [data(i).diastolic.endo.tri ; data(i).diastolic.epi.tri + size(data(i).diastolic.endo.xyz,1) ];
-data(i).systolic.full.xyz = [data(i).systolic.endo.xyz ; data(i).systolic.epi.xyz ];
-data(i).systolic.full.tri = [data(i).systolic.endo.tri ; data(i).systolic.epi.tri + size(data(i).systolic.endo.xyz,1) ];
-end 
+  [data] = calcMyoVolume(data, myoB);
+
+disp('finished making myo shapes')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% CALCULATE ENDO AND EPI VOLUMES
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -239,10 +235,11 @@ disp('finished calculating endo and epi volumes')
 
 plotVolumes(data,sys_epi_volumes,sys_endo_volumes,dia_epi_volumes,dia_endo_volumes)
 
- %%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
 %% CALCULATE MYO VOLUMES (EPI - ENDO)
+disp('start EPI - ENDO')
 [data] = epiMinusEndoVolumes(data);
-
+disp('finish EPI - ENDO')
 %% %%%%%%%%%%%%%%%%%%%%%%%
 
 % store volumes for plotting
@@ -294,14 +291,14 @@ ylabel Frequency
 %%
 % use Ernesto's myo volumes
 % for i = 1:401
-%     
+%
 %     data(i).
 
 % for i = 1:401
 % all(i,:) = data(i).dia_dEPI2ENDO;
-% end 
+% end
 %    mean = mean(all);
-%    
+%
 % figure; patch( 'vertices',data(1).diastolic.endo.xyz,'faces',data(1).diastolic.epi.tri,'facecolor','interp','cdata',mean','edgecolor',[1 1 1]*0.2)
 % axis equal;
 % view(3);
@@ -435,7 +432,7 @@ tic
 [shape_nRows , shape_nCols] = size(data(2).diastolic.endo.xyz(1:1089,:));
 
 %use the initial data clouds as references
-initial_reference_id = 2; %sets which case will be the initial reference
+initial_reference_id = 1; %sets which case will be the initial reference
 
 %remove the B points (added in calcVolumes())
 dia_endo_reference = data(initial_reference_id).diastolic.endo.xyz(1:1089,:);
@@ -482,9 +479,10 @@ toc
 % see Cootes tutorial for help: http://personalpages.manchester.ac.uk/staff/timothy.f.cootes/Models/app_models.pdf
 disp('started PCA')
 tic
-% do PCA on MESA and DETERMINE cases only
 % nCases = 400;
 % for i = 1:nCases
+
+% do PCA on MESA and DETERMINE cases only
 for d = sort(data(1).DETERMINE_indices')
     
     DETERMINE_diastolic_myo_shapes(d,:) = all_training_diastolic_myo_shapes(d,:);
@@ -512,12 +510,12 @@ for m = 1:100
     m
     subplot 121
     title 'MESA, all four shapes'
-    plot3D( reshape(MESA_dia_sys_myo_shapes(m,:),[4*1089 3]) )
+    plot3D( reshape(MESA_dia_sys_myo_shapes(m,:),[4*1089 3]) ,'o')
     hold on
     
     subplot 122
     title 'DETERMINE, all four shapes'
-    plot3D( reshape(DETERMINE_dia_sys_myo_shapes(m,:),[4*1089 3]) )
+    plot3D( reshape(DETERMINE_dia_sys_myo_shapes(m,:),[4*1089 3]) ,'o')
     hold on
     
 end
@@ -563,13 +561,14 @@ sorted_sys_myo_eigenvalues_contributions = 100*(sorted_sys_myo_eigenvalues./(sum
 sorted_dia_sys_myo_eigenvalues_contributions = 100*(sorted_dia_sys_myo_eigenvalues./(sum(sorted_dia_sys_myo_eigenvalues)));
 
 %% PCA - contribution from the chosen eigenvectors, as a percentage
-principle_dia_myo_eigenvalues_contribution = sum(sorted_dia_myo_eigenvalues_contributions(1:nEigenvalues,1));
-principle_sys_myo_eigenvalues_contribution = sum(sorted_sys_myo_eigenvalues_contributions(1:nEigenvalues,1));
-principle_dia_sys_myo_eigenvalues_contribution = sum(sorted_dia_sys_myo_eigenvalues_contributions(1:nEigenvalues,1));
+principle_dia_myo_eigenvalues_contribution = sorted_dia_myo_eigenvalues_contributions(1:nEigenvalues);
+principle_sys_myo_eigenvalues_contribution = sorted_sys_myo_eigenvalues_contributions(1:nEigenvalues);
+principle_dia_sys_myo_eigenvalues_contribution = sorted_dia_sys_myo_eigenvalues_contributions(1:nEigenvalues);
 
 principle_dia_sys_myo_eigenvectors = zeros(13068, nEigenvalues);
 principle_dia_myo_eigenvectors = zeros(6534, nEigenvalues);
 principle_sys_myo_eigenvectors = zeros(6534, nEigenvalues);
+
 for n = 1:nEigenvalues
     [dia_myo_eRows(1,n), dia_myo_eCols(1,n)] = find(dia_myo_eigenvalues == principle_dia_myo_eigenvalues(n,1));
     [sys_myo_eRows(1,n), sys_myo_eCols(1,n)] = find(sys_myo_eigenvalues == principle_sys_myo_eigenvalues(n,1));
@@ -577,21 +576,22 @@ for n = 1:nEigenvalues
     
     principle_dia_myo_eigenvectors(:,n) = dia_myo_eigenvectors(:, dia_myo_eCols(1,n));
     principle_sys_myo_eigenvectors(:,n) = sys_myo_eigenvectors(:, sys_myo_eCols(1,n));
-    principle_dia_sys_myo_eigenvectors(:,n) = dia_sys_myo_eigenvectors(:, dia_sys_myo_eCols(1,n));
-    
+    principle_dia_sys_myo_eigenvectors(:,n) = dia_sys_myo_eigenvectors(:, dia_sys_myo_eCols(1,n)); 
 end
 
-%% Find model parameter values (b) , using +/- 3*sqrt(eigenvalue) as b
+%% Find model parameter values (b) , using +/- sqrt(eigenvalue) as b
+% b can be increased later.
+
 % systolic, endocardium
-dia_myo_min_b = - 3*sqrt(principle_dia_myo_eigenvalues);
-dia_myo_max_b = 3*sqrt(principle_dia_myo_eigenvalues);
-sys_myo_min_b = - 3*sqrt(principle_sys_myo_eigenvalues);
-sys_myo_max_b = 3*sqrt(principle_sys_myo_eigenvalues);
-dia_sys_myo_min_b = - 3*sqrt(principle_dia_sys_myo_eigenvalues);
-dia_sys_myo_max_b = 3*sqrt(principle_dia_sys_myo_eigenvalues);
+dia_myo_min_b = - sqrt(principle_dia_myo_eigenvalues);
+dia_myo_max_b = sqrt(principle_dia_myo_eigenvalues);
+sys_myo_min_b = -sqrt(principle_sys_myo_eigenvalues);
+sys_myo_max_b = sqrt(principle_sys_myo_eigenvalues);
+dia_sys_myo_min_b = - sqrt(principle_dia_sys_myo_eigenvalues);
+dia_sys_myo_max_b = sqrt(principle_dia_sys_myo_eigenvalues);
 
 disp('finished PCA')
-toc
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Point distribution model (PDM)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -640,11 +640,13 @@ hold on
 plot(dia_CS(1:100))
 plot(sys_CS(1:100))
 for eigVal = 1:10
-plot(eigVal,(dia_CS(eigVal)),'o')
+    plot(eigVal,(dia_CS(eigVal)),'o')
 end
 for eigVal = 1:10
-plot(eigVal,(sys_CS(eigVal)),'*')
+    plot(eigVal,(sys_CS(eigVal)),'*')
 end
+xlabel 'eigenmode'
+ylabel 'contribution'
 legend 'diastole' 'systole'
 hold off
 
@@ -652,8 +654,10 @@ figure
 hold on
 plot(dia_sys_CS(1:100))
 for eigVal = 1:10
-plot(eigVal,(dia_sys_CS(eigVal)),'o')
+    plot(eigVal,(dia_sys_CS(eigVal)),'o')
 end
+xlabel 'eigenmode'
+ylabel 'contribution'
 legend 'diastole and systole'
 hold off
 
@@ -691,9 +695,9 @@ end
 
 %% visualise modes of variation - static
 % close all
-visualisingMode1= 7
-visualisingMode2 = 3
-c = 2 %number of standard deviations
+visualisingMode1 = 1
+visualisingMode2 = 2
+c = 3 %number of standard deviations
 x = [-60 ; 40];
 y = [-65 ;50];
 z = [-110 ; 20];
@@ -711,7 +715,7 @@ title ([ 'mode',  num2str(visualisingMode) ])
 axis off
 for n = 1:4
     movie(F)
- 
+    
 end
 %% visualise b values - histograms
 b = 2;
@@ -719,12 +723,12 @@ b = 2;
 for b = 1:10
     b
     figure
-nbins = 30;
-hold on
-histogram(DETERMINE_sys_myo_b(:,b), nbins)
-histogram(MESA_sys_myo_b(:,b), nbins)
-hold off
-pause
+    nbins = 30;
+    hold on
+    histogram(DETERMINE_sys_myo_b(:,b), nbins)
+    histogram(MESA_sys_myo_b(:,b), nbins)
+    hold off
+    pause
 end
 
 % visualise b values - 2D plot
@@ -750,14 +754,14 @@ hold off
 
 figure('name','myocardium thickness bullseye plot: mode of variation , -/+*c*std')
 colormap jet
-cmin = 0
-cmax = 15
+cmin = 0;
+cmax = 15;
 subplot 121
 axis tight
 axis square
 tmpShape = reshape(dia_sys_myo_new_shape_minus(:,visualisingMode1), [2*2178 , 3]);
 shape = tmpShape(1:2178,:);
-run('preProcessData_BullsEyePlots_NewShape.m')
+run('preProcessData_BullsEyePlots_NewShape.m');
 subplot 122
 axis tight
 axis square
@@ -770,31 +774,37 @@ colormap jet
 axis tight
 axis square
 shape = reshape(dia_sys_myo_mean(:), [2*2178 , 3]);
-shape = shape(1:2178,:)
-run('preProcessData_BullsEyePlots_NewShape.m')
+shape = shape(1:2178,:);
+run('preProcessData_BullsEyePlots_NewShape.m');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% CLASSIFICATION
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% SVM - set training data
 trainingdata(:,1) = [DETERMINE_ejectionFractions' ; MESA_ejectionFractions'];
+%modes of variation
 trainingdata(:,2:6) = [DETERMINE_sys_myo_b(:,1:5) ; MESA_sys_myo_b(:,1:5)]; %from the PDM
 trainingdata(:,7:11) = [DETERMINE_dia_myo_b(:,1:5) ; MESA_dia_myo_b(:,1:5)];
 trainingdata(:,12:21) = [DETERMINE_dia_sys_myo_b(:,1:10) ; MESA_dia_sys_myo_b(:,1:10)];
+%sphericity measure
 trainingdata(:,22) = [DETERMINE_dia_endo_AVratios ; MESA_dia_endo_AVratios ];
 trainingdata(:,23) = [DETERMINE_sys_endo_AVratios ; MESA_sys_endo_AVratios ];
-trainingdata(:,24) = [cell2mat({data(data(1).DETERMINE_indices).dia_dEPI2ENDO_vars})' ; cell2mat({data(data(1).MESA_indices).dia_dEPI2ENDO_vars})'];
-trainingdata(:,25) = [cell2mat({data(data(1).DETERMINE_indices).sys_dEPI2ENDO_vars})' ; cell2mat({data(data(1).MESA_indices).sys_dEPI2ENDO_vars})'];
+% mean thickness
+trainingdata(:,24) = [diaMeanT(data(1).DETERMINE_indices)' ; diaMeanT(data(1).MESA_indices)'];
+trainingdata(:,25) = [sysMeanT(data(1).DETERMINE_indices)' ; sysMeanT(data(1).MESA_indices)'];
+% mean(sys thickness) - mean(dia thickness) e.g. change in mean thickness from diastole to systole
 trainingdata(:,26) = [deltaMeanT(data(1).DETERMINE_indices)' ; deltaMeanT(data(1).MESA_indices)'];
-trainingdata(:,27) = [diaMeanT(data(1).DETERMINE_indices)' ; diaMeanT(data(1).MESA_indices)'];
-trainingdata(:,28) = [sysMeanT(data(1).DETERMINE_indices)' ; sysMeanT(data(1).MESA_indices)'];
-trainingdata(:,29) = [diaModeT(data(1).DETERMINE_indices)' ; diaModeT(data(1).MESA_indices)'];
-trainingdata(:,30) = [sysModeT(data(1).DETERMINE_indices)' ; sysModeT(data(1).MESA_indices)'];
-trainingdata(:,31) = [sysMedianT(data(1).DETERMINE_indices)' ; sysMedianT(data(1).MESA_indices)'];
-trainingdata(:,32) = [DETERMINEdiaMyoThicknessVariance' ; MESAdiaMyoThicknessVariance' ];
-trainingdata(:,33) = [DETERMINEsysMyoThicknessVariance' ; MESAsysMyoThicknessVariance' ];
-trainingdata(:,34) = [DETERMINEmyoTchangesVar' ;MESAmyoTchangesVar'];
-trainingdata(:,35) = [DETERMINEdeltaMeanT' ; MESAdeltaMeanT' ];
-trainingdata(:,36) = [DETERMINE_DiaSys_dEPI2ENDO_vars' ; MESA_DiaSys_dEPI2ENDO_vars' ];
+%most common thickness
+trainingdata(:,27) = [diaModeT(data(1).DETERMINE_indices)' ; diaModeT(data(1).MESA_indices)'];
+trainingdata(:,28) = [sysModeT(data(1).DETERMINE_indices)' ; sysModeT(data(1).MESA_indices)'];
+% median thickness
+trainingdata(:,29) = [sysMedianT(data(1).DETERMINE_indices)' ; sysMedianT(data(1).MESA_indices)'];
+%thickness variance for diastole and systole seperately
+trainingdata(:,30) = [DETERMINEdiaMyoThicknessVariance' ; MESAdiaMyoThicknessVariance' ];
+trainingdata(:,31) = [DETERMINEsysMyoThicknessVariance' ; MESAsysMyoThicknessVariance' ];
+% var(sys thickness - dia thickness)  e.g. variance in the difference between diastole and systole
+trainingdata(:,32) = [DETERMINEmyoTchangesVar' ;MESAmyoTchangesVar'];
+% % var([ dia thickness ; sys thickness])
+% trainingdata(:,33) = [DETERMINE_DiaSys_dEPI2ENDO_vars' ; MESA_DiaSys_dEPI2ENDO_vars' ];
 %% training data labels
 trainingdataLabels = [
     'EF                ' ;...
@@ -820,19 +830,16 @@ trainingdataLabels = [
     'dia sys myo b10   ' ;...
     'dia endo AV ratio ' ;...
     'sys endo AV ratio ' ;...
-    'dia dEPI2ENDO vars' ;...
-    'deltaTmean        ' ;...
     'diaMeanT          ' ;...
     'sysMeanT          ' ;...
+    'deltameanT        ' ;...
     'diaModeT          ' ;...
     'sysModeT          ' ;...
     'sysMedianT        ' ;...
     'diaMyoThicknessVar' ;...
     'sysMyoThicknessVar' ;...
-    'myoTchangesVar    ' ;...
-    'deltaMeanT        ' ;...
-    'DiaSysdEPI2ENDOvar' ] ;
-        
+    'myoTchangesVar    ' ] ;
+
 %% class names
 names = char(200,1);
 names(1:100,1) = 'd';
@@ -844,8 +851,8 @@ b = [bestParam1(1);bestParam2(1);bestParam3]';
 figure
 hold on
 %histogram(trainingdata(1:100,b))
- plot3D(trainingdata(1:100,b),'o')
- plot3D(trainingdata(101:200,b),'o')
+plot3D(trainingdata(1:100,b),'o')
+plot3D(trainingdata(101:200,b),'o')
 hold off
 legend ' DETERMINE' 'MESA'
 xlabel ([ num2str(bestParam1(1)) ])
@@ -859,7 +866,7 @@ svmStruct = svmtrain(trainingdata(:,[bestParam1(1);bestParam2(1)]),names,'ShowPl
 % %  which is the best trio of b values for classification?
 tic
 SVMclassification_rates = zeros((size(param1,2)),(size(param2,2)));
-for param1 = 2:36
+for param1 = 2:33
     for param2 = 29
         for   param3 = 1 % ejection fractions
             tic
@@ -871,11 +878,11 @@ for param1 = 2:36
             
             
             % cross-validation of the SVM
-%             CVSVMModel = crossval(SVMModel);
-%             misclassification_rate = kfoldLoss(CVSVMModel);
-%             %         classification_rates(param1,param2) = 1 - misclassification_rate
-%             SVMclassification_rates(param1, param2) = 1 - misclassification_rate
-%             
+            %             CVSVMModel = crossval(SVMModel);
+            %             misclassification_rate = kfoldLoss(CVSVMModel);
+            %             %         classification_rates(param1,param2) = 1 - misclassification_rate
+            %             SVMclassification_rates(param1, param2) = 1 - misclassification_rate
+            %
         end
     end
 end
@@ -886,20 +893,20 @@ toc
 %% LDA - 2 parameters
 
 LDAcross_validated_classification_rates =  zeros(size(trainingdata,2),size(trainingdata,2));
-for param1 = 1:36
+for param1 = 1:33
     param1
     for param2 = 1
         param2
         obj = fitcdiscr(trainingdata(:,[param1;param2]), names);
-        % obj = fitcdiscr(trainingdata(:,:), names); %using all 12 gives 94% classified      
+        % obj = fitcdiscr(trainingdata(:,:), names); %using all 12 gives 94% classified
         resuberror = resubLoss(obj); %proportion of misclassified observations
         LDAclassification_rates(param1,param2) = 1 - resuberror;
-    
-        cvmodel = crossval(obj,'leaveout','on');
-cverror = kfoldLoss(cvmodel);
-LDAcross_validated_classification_rates(param1, param2) = 1 - cverror;
         
-    
+        cvmodel = crossval(obj,'leaveout','on');
+        cverror = kfoldLoss(cvmodel);
+        LDAcross_validated_classification_rates(param1, param2) = 1 - cverror;
+        
+        
     end
 end
 
@@ -922,25 +929,26 @@ set(gca,'yMinorTick','on')
 title 'EF + ...'
 % subplot 122
 % histogram(LDAclassification_rates)
-% xlabel 
+% xlabel
 
-[bestParam1,bestParam2] = find(LDAcross_validated_classification_rates==max_rate(max_rate(LDAcross_validated_classification_rates)))
+[bestParam1,bestParam2] = find(LDAcross_validated_classification_rates==max(max(LDAcross_validated_classification_rates)))
 [best1] = trainingdataLabels(bestParam1,:)
 [best2] = trainingdataLabels(bestParam2,:)
 %% LDA - 3 parameters
 LDAcross_validated_classification_rates =  zeros(size(param1,2),size(param2,2));
-for param1 = 1:36
-    for param2 = 29
+for param1 = 1:33
+    param1
+    for param2 = 27
         for param3 = 1 % param3 is EF
             tic
             obj = fitcdiscr(trainingdata(:,[param1, param2 param3]), names);
             
             resuberror = resubLoss(obj); %proportion of misclassified observations
-            LDAclassification_rates(param1, param2) = 1 - resuberror
-        cvmodel = crossval(obj,'leaveout','on');
-cverror = kfoldLoss(cvmodel);
-LDAcross_validated_classification_rates(param1, param2) = 1 - cverror
-        
+            LDAclassification_rates(param1, param2) = 1 - resuberror;
+            cvmodel = crossval(obj,'leaveout','on');
+            cverror = kfoldLoss(cvmodel);
+            LDAcross_validated_classification_rates(param1, param2) = 1 - cverror;
+            
         end
     end
 end
@@ -948,7 +956,7 @@ end
 hold on
 % subplot 121
 plot([0 size(trainingdata,2)],[max(max(LDAcross_validated_classification_rates)) max(max(LDAcross_validated_classification_rates))])
-legend (['max classification = ' num2str(max(max(LDAcross_validated_classification_rates)))]) 
+legend (['max classification = ' num2str(max(max(LDAcross_validated_classification_rates)))])
 plot([0 size(trainingdata,2)],[0.87 0.87])
 plot(LDAcross_validated_classification_rates(:,param2),'o')
 ylabel 'classification success'
@@ -973,10 +981,43 @@ max(max(LDAcross_validated_classification_rates))
 % title 'LDA - 3 parameters'
 % xlabel 'training data column'
 % ylabel 'training data column'
-% colorbar 
+% colorbar
 
 % LDAclassification_rates = table(LDAclassification_rates(:,:))
 
+
+LDAcross_validated_classification_rates =  zeros(size(param1,2),size(param2,2));
+for param4 = 1:33
+    for param1 = 32
+    param4
+    for param2 = 27
+        for param3 = 1 % param3 is EF
+            tic
+            obj = fitcdiscr(trainingdata(:,[param4, param1, param2 param3]), names);
+            
+            resuberror = resubLoss(obj); %proportion of misclassified observations
+            LDAclassification_rates(param4) = 1 - resuberror;
+            cvmodel = crossval(obj,'leaveout','on');
+            cverror = kfoldLoss(cvmodel);
+            LDAcross_validated_classification_rates(param4) = 1 - cverror;
+            
+        end
+    end
+end
+end
+hold on
+% subplot 121
+plot([0 size(trainingdata,2)],[max(max(LDAcross_validated_classification_rates)) max(max(LDAcross_validated_classification_rates))])
+legend (['max classification = ' num2str(max(max(LDAcross_validated_classification_rates)))])
+plot([0 size(trainingdata,2)],[0.87 0.87])
+plot(LDAcross_validated_classification_rates(1:param4),'o')
+ylabel 'classification success'
+ylim ([0.8 1])
+xlim ([1 size(trainingdata,2)])
+xlabel 'training data column (parameter index)'
+set(gca,'yMinorTick','on')
+title 'EF + systolic endocardium area to volume ratio + ...'
+% subplot 122
 %% LDA - confusion matrix shows performance of classifier.
 % row 1: DETERMINE, row 2: MESA
 R = confusionmat(obj.Y,resubPredict(obj))
@@ -1045,7 +1086,7 @@ classification_rate = (sum(SCORE)/200)
 % histogram(mdlDefaultNumSplits)
 
 % view(tree.Trained{1},'Mode','graph')
-% 
+%
 % E = kfoldLoss(tree)
 % classification_success = 1 - E
 
@@ -1061,7 +1102,7 @@ xlabel 'Number of grown trees';
 ylabel 'Out-of-bag classification error';
 
 % 1 - oobErrorBaggedEnsemble(nTrees,1)
-% 
+%
 % err = error(BaggedEnsemble,trainingdata(:,:),names,'mode','cumulative')
 % plot(err)
 % hold on
