@@ -9,9 +9,8 @@ concatIndices = sort([data(1).MESA_indices ; data(1).DETERMINE_indices ]);
 for p = 1:pI
     
     % iterate so that procrustes is performed on each case (400 patients).
-    % for i = 1:400
     
-    
+    %     for n = 1:200
     for   i = concatIndices(1:end)';
         % % transform endo and epi (individually)
         % [data(i).diastolic.endo.procrustes_d, data(i).diastolic.endo.xyz] = procrustes(dia_endo_reference, data(i).diastolic.endo.xyz(:));
