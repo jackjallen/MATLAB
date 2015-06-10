@@ -1,0 +1,255 @@
+ vtkMassProperties
+
+ Timestamp is 516c13ac (Mon Apr 15 16:50:20 2013)
+
+ Preferred load address is 10000000
+
+ Start         Length     Name                   Class
+ 0001:00000000 000016d4H .text                   CODE
+ 0002:00000000 00000138H .idata$5                DATA
+ 0002:00000138 00000004H .CRT$XCA                DATA
+ 0002:0000013c 00000004H .CRT$XCZ                DATA
+ 0002:00000140 00000004H .CRT$XIA                DATA
+ 0002:00000144 00000004H .CRT$XIAA               DATA
+ 0002:00000148 00000004H .CRT$XIC                DATA
+ 0002:0000014c 00000004H .CRT$XIZ                DATA
+ 0002:00000150 00000790H .rdata                  DATA
+ 0002:000008e0 00000004H .rdata$sxdata           DATA
+ 0002:000008e4 00000004H .rtc$IAA                DATA
+ 0002:000008e8 00000004H .rtc$IZZ                DATA
+ 0002:000008ec 00000004H .rtc$TAA                DATA
+ 0002:000008f0 00000004H .rtc$TZZ                DATA
+ 0002:000008f8 00000084H .xdata$x                DATA
+ 0002:0000097c 0000008cH .idata$2                DATA
+ 0002:00000a08 00000014H .idata$3                DATA
+ 0002:00000a1c 00000138H .idata$4                DATA
+ 0002:00000b54 000007f4H .idata$6                DATA
+ 0002:00001350 00000057H .edata                  DATA
+ 0003:00000000 00000020H .data                   DATA
+ 0003:00000020 00000350H .bss                    DATA
+
+  Address         Publics by Value              Rva+Base       Lib:Object
+
+ 0000:00000000       __except_list              00000000     <absolute>
+ 0000:00000001       ___safe_se_handler_count   00000001     <absolute>
+ 0000:00009876       __fltused                  00009876     <absolute>
+ 0000:00009876       __ldused                   00009876     <absolute>
+ 0000:00000000       ___ImageBase               10000000     <linker-defined>
+ 0001:00000000       ?myStrcmpi@@YAHPAD0@Z      10001000 f   vtkMassProperties.obj
+ 0001:00000080       ?MESH2vtkPolyData@@YAPAVvtkPolyData@@PBUmxArray_tag@@@Z 10001080 f   vtkMassProperties.obj
+ 0001:000006b0       _mexFunction               100016b0 f   vtkMassProperties.obj
+ 0001:00000c76       _mxCreateDoubleScalar      10001c76 f   libmx:libmx.dll
+ 0001:00000c7c       _mxGetNumberOfElements     10001c7c f   libmx:libmx.dll
+ 0001:00000c82       _mxFree                    10001c82 f   libmx:libmx.dll
+ 0001:00000c88       _mxGetN                    10001c88 f   libmx:libmx.dll
+ 0001:00000c8e       _mxGetFieldNameByNumber    10001c8e f   libmx:libmx.dll
+ 0001:00000c94       _mxGetNumberOfFields       10001c94 f   libmx:libmx.dll
+ 0001:00000c9a       _mxGetPr                   10001c9a f   libmx:libmx.dll
+ 0001:00000ca0       _mxGetM                    10001ca0 f   libmx:libmx.dll
+ 0001:00000ca6       _mxGetField_700            10001ca6 f   libmx:libmx.dll
+ 0001:00000cac       _mxGetString_700           10001cac f   libmx:libmx.dll
+ 0001:00000cb2       _mxIsChar                  10001cb2 f   libmx:libmx.dll
+ 0001:00000cb8       _mexPrintf                 10001cb8 f   libmex:libmex.dll
+ 0001:00000cc0       __ftol2_sse                10001cc0 f   MSVCRT:ftol2.obj
+ 0001:00000cc9       __ftol2_pentium4           10001cc9 f   MSVCRT:ftol2.obj
+ 0001:00000cdc       __ftol2_sse_excpt          10001cdc f   MSVCRT:ftol2.obj
+ 0001:00000cf6       __ftol2                    10001cf6 f   MSVCRT:ftol2.obj
+ 0001:00000d6b       @__security_check_cookie@4 10001d6b f   MSVCRT:secchk.obj
+ 0001:00000d7a       _memset                    10001d7a f   MSVCRT:MSVCR90.dll
+ 0001:00000dcf       __CRT_INIT@12              10001dcf f   MSVCRT:crtdll.obj
+ 0001:0000110b       __DllMainCRTStartup@12     1000210b f   MSVCRT:crtdll.obj
+ 0001:0000117e       __get_sse2_info            1000217e f   MSVCRT:cpu_disp.obj
+ 0001:000011e0       ___sse2_available_init     100021e0 f   MSVCRT:cpu_disp.obj
+ 0001:000011ed       ___report_gsfailure        100021ed f   MSVCRT:gs_report.obj
+ 0001:000012f3       ___clean_type_info_names   100022f3 f   MSVCRT:tncleanup.obj
+ 0001:000012ff       __onexit                   100022ff f   MSVCRT:atonexit.obj
+ 0001:000013a4       _atexit                    100023a4 f   MSVCRT:atonexit.obj
+ 0001:000013bb       __RTC_Initialize           100023bb f   MSVCRT:_initsect_.obj
+ 0001:000013e1       __RTC_Terminate            100023e1 f   MSVCRT:_initsect_.obj
+ 0001:00001410       __ValidateImageBase        10002410 f   MSVCRT:pesect.obj
+ 0001:00001450       __FindPESection            10002450 f   MSVCRT:pesect.obj
+ 0001:000014a0       __IsNonwritableInCurrentImage 100024a0 f   MSVCRT:pesect.obj
+ 0001:0000155e       __initterm                 1000255e f   MSVCRT:MSVCR90.dll
+ 0001:00001564       __initterm_e               10002564 f   MSVCRT:MSVCR90.dll
+ 0001:0000156a       __amsg_exit                1000256a f   MSVCRT:MSVCR90.dll
+ 0001:00001570       ___CppXcptFilter           10002570 f   MSVCRT:MSVCR90.dll
+ 0001:00001576       _DllMain@12                10002576 f   MSVCRT:dllmain.obj
+ 0001:0000159c       __SEH_prolog4              1000259c f   MSVCRT:sehprolg4.obj
+ 0001:000015e1       __SEH_epilog4              100025e1 f   MSVCRT:sehprolg4.obj
+ 0001:000015f5       __except_handler4          100025f5 f   MSVCRT:chandler4gs.obj
+ 0001:0000161a       ___security_init_cookie    1000261a f   MSVCRT:gs_support.obj
+ 0001:000016b0       __crt_debugger_hook        100026b0 f   MSVCRT:MSVCR90.dll
+ 0001:000016b6       ___clean_type_info_names_internal 100026b6 f   MSVCRT:MSVCR90.dll
+ 0001:000016bc       __unlock                   100026bc f   MSVCRT:MSVCR90.dll
+ 0001:000016c2       ___dllonexit               100026c2 f   MSVCRT:MSVCR90.dll
+ 0001:000016c8       __lock                     100026c8 f   MSVCRT:MSVCR90.dll
+ 0001:000016ce       __except_handler4_common   100026ce f   MSVCRT:MSVCR90.dll
+ 0002:00000000       __imp__InterlockedExchange@8 10003000     kernel32:KERNEL32.dll
+ 0002:00000004       __imp__Sleep@4             10003004     kernel32:KERNEL32.dll
+ 0002:00000008       __imp__InterlockedCompareExchange@12 10003008     kernel32:KERNEL32.dll
+ 0002:0000000c       __imp__TerminateProcess@8  1000300c     kernel32:KERNEL32.dll
+ 0002:00000010       __imp__GetCurrentProcess@0 10003010     kernel32:KERNEL32.dll
+ 0002:00000014       __imp__UnhandledExceptionFilter@4 10003014     kernel32:KERNEL32.dll
+ 0002:00000018       __imp__SetUnhandledExceptionFilter@4 10003018     kernel32:KERNEL32.dll
+ 0002:0000001c       __imp__IsDebuggerPresent@0 1000301c     kernel32:KERNEL32.dll
+ 0002:00000020       __imp__DisableThreadLibraryCalls@4 10003020     kernel32:KERNEL32.dll
+ 0002:00000024       __imp__QueryPerformanceCounter@4 10003024     kernel32:KERNEL32.dll
+ 0002:00000028       __imp__GetTickCount@0      10003028     kernel32:KERNEL32.dll
+ 0002:0000002c       __imp__GetCurrentThreadId@0 1000302c     kernel32:KERNEL32.dll
+ 0002:00000030       __imp__GetCurrentProcessId@0 10003030     kernel32:KERNEL32.dll
+ 0002:00000034       __imp__GetSystemTimeAsFileTime@4 10003034     kernel32:KERNEL32.dll
+ 0002:00000038       \177KERNEL32_NULL_THUNK_DATA 10003038     kernel32:KERNEL32.dll
+ 0002:0000003c       __imp___encoded_null       1000303c     MSVCRT:MSVCR90.dll
+ 0002:00000040       __imp___malloc_crt         10003040     MSVCRT:MSVCR90.dll
+ 0002:00000044       __imp___encode_pointer     10003044     MSVCRT:MSVCR90.dll
+ 0002:00000048       __imp__memset              10003048     MSVCRT:MSVCR90.dll
+ 0002:0000004c       __imp__strncmp             1000304c     MSVCRT:MSVCR90.dll
+ 0002:00000050       __imp___decode_pointer     10003050     MSVCRT:MSVCR90.dll
+ 0002:00000054       __imp___initterm           10003054     MSVCRT:MSVCR90.dll
+ 0002:00000058       __imp___initterm_e         10003058     MSVCRT:MSVCR90.dll
+ 0002:0000005c       __imp___amsg_exit          1000305c     MSVCRT:MSVCR90.dll
+ 0002:00000060       __imp___adjust_fdiv        10003060     MSVCRT:MSVCR90.dll
+ 0002:00000064       __imp____CppXcptFilter     10003064     MSVCRT:MSVCR90.dll
+ 0002:00000068       __imp___crt_debugger_hook  10003068     MSVCRT:MSVCR90.dll
+ 0002:0000006c       __imp____clean_type_info_names_internal 1000306c     MSVCRT:MSVCR90.dll
+ 0002:00000070       __imp___unlock             10003070     MSVCRT:MSVCR90.dll
+ 0002:00000074       __imp____dllonexit         10003074     MSVCRT:MSVCR90.dll
+ 0002:00000078       __imp___lock               10003078     MSVCRT:MSVCR90.dll
+ 0002:0000007c       __imp___onexit             1000307c     MSVCRT:MSVCR90.dll
+ 0002:00000080       __imp___except_handler4_common 10003080     MSVCRT:MSVCR90.dll
+ 0002:00000084       __imp__free                10003084     MSVCRT:MSVCR90.dll
+ 0002:00000088       \177MSVCR90_NULL_THUNK_DATA 10003088     MSVCRT:MSVCR90.dll
+ 0002:0000008c       __imp__mexPrintf           1000308c     libmex:libmex.dll
+ 0002:00000090       \177libmex_NULL_THUNK_DATA 10003090     libmex:libmex.dll
+ 0002:00000094       __imp__mxCreateDoubleScalar 10003094     libmx:libmx.dll
+ 0002:00000098       __imp__mxGetNumberOfElements 10003098     libmx:libmx.dll
+ 0002:0000009c       __imp__mxIsChar            1000309c     libmx:libmx.dll
+ 0002:000000a0       __imp__mxGetString_700     100030a0     libmx:libmx.dll
+ 0002:000000a4       __imp__mxGetField_700      100030a4     libmx:libmx.dll
+ 0002:000000a8       __imp__mxGetM              100030a8     libmx:libmx.dll
+ 0002:000000ac       __imp__mxGetPr             100030ac     libmx:libmx.dll
+ 0002:000000b0       __imp__mxGetNumberOfFields 100030b0     libmx:libmx.dll
+ 0002:000000b4       __imp__mxGetFieldNameByNumber 100030b4     libmx:libmx.dll
+ 0002:000000b8       __imp__mxGetN              100030b8     libmx:libmx.dll
+ 0002:000000bc       __imp__mxFree              100030bc     libmx:libmx.dll
+ 0002:000000c0       \177libmx_NULL_THUNK_DATA  100030c0     libmx:libmx.dll
+ 0002:000000c4       __imp_?InsertNextValue@?$vtkDataArrayTemplate@H@@QAEHH@Z 100030c4     vtkCommon:vtkCommon.dll
+ 0002:000000c8       __imp_?InsertValue@?$vtkDataArrayTemplate@H@@QAEXHH@Z 100030c8     vtkCommon:vtkCommon.dll
+ 0002:000000cc       __imp_?InsertPoint@vtkPoints@@QAEXHNNN@Z 100030cc     vtkCommon:vtkCommon.dll
+ 0002:000000d0       __imp_?New@vtkPoints@@SAPAV1@XZ 100030d0     vtkCommon:vtkCommon.dll
+ 0002:000000d4       __imp_?New@vtkDoubleArray@@SAPAV1@XZ 100030d4     vtkCommon:vtkCommon.dll
+ 0002:000000d8       \177vtkCommon_NULL_THUNK_DATA 100030d8     vtkCommon:vtkCommon.dll
+ 0002:000000dc       __imp_?SetActiveTCoords@vtkDataSetAttributes@@QAEHPBD@Z 100030dc     vtkFiltering:vtkFiltering.dll
+ 0002:000000e0       __imp_?SetTCoords@vtkDataSetAttributes@@QAEHPAVvtkDataArray@@@Z 100030e0     vtkFiltering:vtkFiltering.dll
+ 0002:000000e4       __imp_?SetActiveNormals@vtkDataSetAttributes@@QAEHPBD@Z 100030e4     vtkFiltering:vtkFiltering.dll
+ 0002:000000e8       __imp_?AddArray@vtkFieldData@@QAEHPAVvtkAbstractArray@@@Z 100030e8     vtkFiltering:vtkFiltering.dll
+ 0002:000000ec       __imp_?SetPolys@vtkPolyData@@QAEXPAVvtkCellArray@@@Z 100030ec     vtkFiltering:vtkFiltering.dll
+ 0002:000000f0       __imp_?New@vtkCellArray@@SAPAV1@XZ 100030f0     vtkFiltering:vtkFiltering.dll
+ 0002:000000f4       __imp_?New@vtkPolyData@@SAPAV1@XZ 100030f4     vtkFiltering:vtkFiltering.dll
+ 0002:000000f8       __imp_?SetInput@vtkPolyDataAlgorithm@@QAEXPAVvtkDataObject@@@Z 100030f8     vtkFiltering:vtkFiltering.dll
+ 0002:000000fc       \177vtkFiltering_NULL_THUNK_DATA 100030fc     vtkFiltering:vtkFiltering.dll
+ 0002:00000100       __imp_?GetSurfaceArea@vtkMassProperties@@QAENXZ 10003100     vtkGraphics:vtkGraphics.dll
+ 0002:00000104       __imp_?GetVolumeProjected@vtkMassProperties@@QAENXZ 10003104     vtkGraphics:vtkGraphics.dll
+ 0002:00000108       __imp_?GetMinCellArea@vtkMassProperties@@QAENXZ 10003108     vtkGraphics:vtkGraphics.dll
+ 0002:0000010c       __imp_?GetMaxCellArea@vtkMassProperties@@QAENXZ 1000310c     vtkGraphics:vtkGraphics.dll
+ 0002:00000110       __imp_?GetVolumeX@vtkMassProperties@@QAENXZ 10003110     vtkGraphics:vtkGraphics.dll
+ 0002:00000114       __imp_?GetVolumeY@vtkMassProperties@@QAENXZ 10003114     vtkGraphics:vtkGraphics.dll
+ 0002:00000118       __imp_?GetVolumeZ@vtkMassProperties@@QAENXZ 10003118     vtkGraphics:vtkGraphics.dll
+ 0002:0000011c       __imp_?GetKx@vtkMassProperties@@QAENXZ 1000311c     vtkGraphics:vtkGraphics.dll
+ 0002:00000120       __imp_?GetKy@vtkMassProperties@@QAENXZ 10003120     vtkGraphics:vtkGraphics.dll
+ 0002:00000124       __imp_?GetKz@vtkMassProperties@@QAENXZ 10003124     vtkGraphics:vtkGraphics.dll
+ 0002:00000128       __imp_?GetNormalizedShapeIndex@vtkMassProperties@@QAENXZ 10003128     vtkGraphics:vtkGraphics.dll
+ 0002:0000012c       __imp_?New@vtkMassProperties@@SAPAV1@XZ 1000312c     vtkGraphics:vtkGraphics.dll
+ 0002:00000130       __imp_?GetVolume@vtkMassProperties@@QAENXZ 10003130     vtkGraphics:vtkGraphics.dll
+ 0002:00000134       \177vtkGraphics_NULL_THUNK_DATA 10003134     vtkGraphics:vtkGraphics.dll
+ 0002:00000138       ___xc_a                    10003138     MSVCRT:cinitexe.obj
+ 0002:0000013c       ___xc_z                    1000313c     MSVCRT:cinitexe.obj
+ 0002:00000140       ___xi_a                    10003140     MSVCRT:cinitexe.obj
+ 0002:0000014c       ___xi_z                    1000314c     MSVCRT:cinitexe.obj
+ 0002:00000150       ??_C@_0P@GHFPNOJB@bad?5allocation?$AA@ 10003150     vtkMassProperties.obj
+ 0002:00000160       ??_C@_02IGCIDAGE@UV?$AA@   10003160     vtkMassProperties.obj
+ 0002:00000164       ??_C@_02CLOBFCCG@uv?$AA@   10003164     vtkMassProperties.obj
+ 0002:00000168       ??_C@_0L@BLIHLPJM@xyzNORMALS?$AA@ 10003168     vtkMassProperties.obj
+ 0002:00000174       ??_C@_07DKDJFLGE@Normals?$AA@ 10003174     vtkMassProperties.obj
+ 0002:0000017c       ??_C@_0L@HMDAKIBI@triNORMALS?$AA@ 1000317c     vtkMassProperties.obj
+ 0002:00000188       ??_C@_03NJKMHLPI@tri?$AA@  10003188     vtkMassProperties.obj
+ 0002:0000018c       ??_C@_03POMAGKDD@xyz?$AA@  1000318c     vtkMassProperties.obj
+ 0002:00000190       ??_C@_0BB@BPNCNMGM@Invalid?5keyword?4?$AA@ 10003190     vtkMassProperties.obj
+ 0002:000001a4       ??_C@_0BI@LEABKJOC@getnormalizedshapeindex?$AA@ 100031a4     vtkMassProperties.obj
+ 0002:000001bc       ??_C@_0BF@JEFBKDFL@normalizedshapeindex?$AA@ 100031bc     vtkMassProperties.obj
+ 0002:000001d4       ??_C@_05HPBBBLPF@getkz?$AA@ 100031d4     vtkMassProperties.obj
+ 0002:000001dc       ??_C@_02JBOMJDFA@kz?$AA@   100031dc     vtkMassProperties.obj
+ 0002:000001e0       ??_C@_05FEDMEIDG@getky?$AA@ 100031e0     vtkMassProperties.obj
+ 0002:000001e8       ??_C@_02LKMBMAJD@ky?$AA@   100031e8     vtkMassProperties.obj
+ 0002:000001ec       ??_C@_05ENCHHJHH@getkx?$AA@ 100031ec     vtkMassProperties.obj
+ 0002:000001f4       ??_C@_02KDNKPBNC@kx?$AA@   100031f4     vtkMassProperties.obj
+ 0002:000001f8       ??_C@_0L@HMFDCDKJ@getvolumez?$AA@ 100031f8     vtkMassProperties.obj
+ 0002:00000204       ??_C@_07JBJIJDHK@volumez?$AA@ 10003204     vtkMassProperties.obj
+ 0002:0000020c       ??_C@_0L@FHHOHAGK@getvolumey?$AA@ 1000320c     vtkMassProperties.obj
+ 0002:00000218       ??_C@_07LKLFMALJ@volumey?$AA@ 10003218     vtkMassProperties.obj
+ 0002:00000220       ??_C@_0L@EOGFEBCL@getvolumex?$AA@ 10003220     vtkMassProperties.obj
+ 0002:0000022c       ??_C@_07KDKOPBPI@volumex?$AA@ 1000322c     vtkMassProperties.obj
+ 0002:00000234       ??_C@_0P@NIECDPAM@getmaxcellarea?$AA@ 10003234     vtkMassProperties.obj
+ 0002:00000244       ??_C@_0M@NPEIEHCL@maxcellarea?$AA@ 10003244     vtkMassProperties.obj
+ 0002:00000250       ??_C@_0P@EIDBCPOG@getmincellarea?$AA@ 10003250     vtkMassProperties.obj
+ 0002:00000260       ??_C@_0M@EPDLFHMB@mincellarea?$AA@ 10003260     vtkMassProperties.obj
+ 0002:0000026c       ??_C@_0BD@DPGOHBMA@getvolumeprojected?$AA@ 1000326c     vtkMassProperties.obj
+ 0002:00000280       ??_C@_0BA@DMOCKCIG@volumeprojected?$AA@ 10003280     vtkMassProperties.obj
+ 0002:00000290       ??_C@_0L@GKIAKNGA@getsurface?$AA@ 10003290     vtkMassProperties.obj
+ 0002:0000029c       ??_C@_0P@CLPMEMPK@getsurfacearea?$AA@ 1000329c     vtkMassProperties.obj
+ 0002:000002ac       ??_C@_0M@CMPGDENN@surfacearea?$AA@ 100032ac     vtkMassProperties.obj
+ 0002:000002b8       ??_C@_07IHELBNLD@surface?$AA@ 100032b8     vtkMassProperties.obj
+ 0002:000002c0       ??_C@_09DPBMIGOM@getvolume?$AA@ 100032c0     vtkMassProperties.obj
+ 0002:000002cc       ??_C@_06EMCPHFGM@volume?$AA@ 100032cc     vtkMassProperties.obj
+ 0002:000002d4       ??_C@_0N@FNNNLGOL@No?5keywords?4?$AA@ 100032d4     vtkMassProperties.obj
+ 0002:000002e8       ??_C@_0MJ@LBDMHLHA@GetNormalizedShapeIndex?7?0?5Comput@ 100032e8     vtkMassProperties.obj
+ 0002:000003b4       ??_C@_0BO@BINMILG@GetKz?5?5?5?5?5?5?5?5?5?5?5?5?5?5?5?5?5?5?5?5?0?5?4?6?$AA@ 100033b4     vtkMassProperties.obj
+ 0002:000003d4       ??_C@_0BO@PDNKCFEO@GetKy?5?5?5?5?5?5?5?5?5?5?5?5?5?5?5?5?5?5?5?5?0?5?4?6?$AA@ 100033d4     vtkMassProperties.obj
+ 0002:000003f8       ??_C@_0HD@MNLHHJLA@GetKx?5?5?5?5?5?5?5?5?5?5?5?5?5?5?5?5?5?5?5?5?0?5Compu@ 100033f8     vtkMassProperties.obj
+ 0002:0000046c       ??_C@_0BO@NOACCFIB@GetVolumeZ?5?5?5?5?5?5?5?5?5?5?5?5?5?5?5?0?5?4?6?$AA@ 1000346c     vtkMassProperties.obj
+ 0002:0000048c       ??_C@_0BO@KFBMKHGC@GetVolumeY?5?5?5?5?5?5?5?5?5?5?5?5?5?5?5?0?5?4?6?$AA@ 1000348c     vtkMassProperties.obj
+ 0002:000004b0       ??_C@_0GD@EGHOJPIF@GetVolumeX?5?5?5?5?5?5?5?5?5?5?5?5?5?5?5?0?5Compu@ 100034b0     vtkMassProperties.obj
+ 0002:00000518       ??_C@_0EC@BKIDBEJL@GetMaxCellArea?5?5?5?5?5?5?5?5?5?5?5?0?5Compu@ 10003518     vtkMassProperties.obj
+ 0002:00000560       ??_C@_0EC@JNDMNNLG@GetMinCellArea?5?5?5?5?5?5?5?5?5?5?5?0?5Compu@ 10003560     vtkMassProperties.obj
+ 0002:000005a8       ??_C@_0BGJ@EMEEBFKL@GetVolumeProjected?5?5?5?5?5?5?5?0?5Compu@ 100035a8     vtkMassProperties.obj
+ 0002:00000714       ??_C@_0DJ@FCPHEMNM@GetSurfaceArea?5?5?5?5?5?5?5?5?5?5?5?0?5Compu@ 10003714     vtkMassProperties.obj
+ 0002:00000750       ??_C@_0DL@LMPEAMAJ@GetVolume?5?5?5?5?5?5?5?5?5?5?5?5?5?5?5?5?0?5Compu@ 10003750     vtkMassProperties.obj
+ 0002:00000790       ??_C@_0NC@GFPODOGM@SetFeatureAngle?5?5?5?5?5?5?5?5?5?5?0?5real?5@ 10003790     vtkMassProperties.obj
+ 0002:00000864       ??_C@_01EEMJAFIK@?6?$AA@   10003864     vtkMassProperties.obj
+ 0002:00000868       ??_C@_0BN@CKFELFDC@vtkMassProperties?$CI?5MESH?5?4?4?4?6?$AA@ 10003868     vtkMassProperties.obj
+ 0002:00000888       __pRawDllMain              10003888     MSVCRT:crtdll.obj
+ 0002:00000888       __pDefaultRawDllMain       10003888     MSVCRT:crtdll.obj
+ 0002:00000898       __load_config_used         10003898     MSVCRT:loadcfg.obj
+ 0002:000008e0       ___safe_se_handler_table   100038e0     <linker-defined>
+ 0002:000008e4       ___rtc_iaa                 100038e4     MSVCRT:_initsect_.obj
+ 0002:000008e8       ___rtc_izz                 100038e8     MSVCRT:_initsect_.obj
+ 0002:000008ec       ___rtc_taa                 100038ec     MSVCRT:_initsect_.obj
+ 0002:000008f0       ___rtc_tzz                 100038f0     MSVCRT:_initsect_.obj
+ 0002:0000097c       __IMPORT_DESCRIPTOR_libmx  1000397c     libmx:libmx.dll
+ 0002:00000990       __IMPORT_DESCRIPTOR_libmex 10003990     libmex:libmex.dll
+ 0002:000009a4       __IMPORT_DESCRIPTOR_vtkCommon 100039a4     vtkCommon:vtkCommon.dll
+ 0002:000009b8       __IMPORT_DESCRIPTOR_vtkFiltering 100039b8     vtkFiltering:vtkFiltering.dll
+ 0002:000009cc       __IMPORT_DESCRIPTOR_vtkGraphics 100039cc     vtkGraphics:vtkGraphics.dll
+ 0002:000009e0       __IMPORT_DESCRIPTOR_MSVCR90 100039e0     MSVCRT:MSVCR90.dll
+ 0002:000009f4       __IMPORT_DESCRIPTOR_KERNEL32 100039f4     kernel32:KERNEL32.dll
+ 0002:00000a08       __NULL_IMPORT_DESCRIPTOR   10003a08     libmx:libmx.dll
+ 0003:00000010       ___security_cookie         10005010     MSVCRT:gs_cookie.obj
+ 0003:00000014       ___security_cookie_complement 10005014     MSVCRT:gs_cookie.obj
+ 0003:00000018       ___native_dllmain_reason   10005018     MSVCRT:natstart.obj
+ 0003:0000001c       ___native_vcclrit_reason   1000501c     MSVCRT:natstart.obj
+ 0003:0000034c       ?__type_info_root_node@@3U__type_info_node@@A 1000534c     MSVCRT:tncleanup.obj
+ 0003:00000354       __adjust_fdiv              10005354     <common>
+ 0003:00000358       ___native_startup_state    10005358     <common>
+ 0003:0000035c       ___native_startup_lock     1000535c     <common>
+ 0003:00000360       ___onexitend               10005360     <common>
+ 0003:00000364       ___onexitbegin             10005364     <common>
+ 0003:00000368       ___sse2_available          10005368     <common>
+ 0003:0000036c       ___dyn_tls_init_callback   1000536c     <common>
+
+ entry point at        0001:0000110b
+
+ Static symbols
+
+ 0001:00000d80       _pre_c_init                10001d80 f   MSVCRT:crtdll.obj
+ 0001:00000ff5       ___DllMainCRTStartup       10001ff5 f   MSVCRT:crtdll.obj
+ 0001:0000112e       _has_osfxsr_set            1000212e f   MSVCRT:cpu_disp.obj

@@ -1,0 +1,121 @@
+#include "mex.h"
+#include "myMEX.h"
+
+/*#define   real       double
+#define   mxREAL_CLASS       mxDOUBLE_CLASS*/
+#undef real
+#undef min
+#undef max
+
+#define carveOBJ_TYPE      carve::csg::CSG::OP
+
+#include <carve/csg.hpp>
+#include <carve/tree.hpp>
+#include <carve/csg_triangulator.hpp>
+#include <carve/csg_collector.hpp>
+
+#include "MESH2carvePolyhedron.h"
+#include "carvePolyhedron2MESH.h"
+
+
+carve::poly::Polyhedron *compute_direct( carve::poly::Polyhedron  *a, carve::poly::Polyhedron  *b, carve::csg::CSG::OP op);
+carve::poly::Polyhedron *compute_by_pipeline( carve::poly::Polyhedron  *a, carve::poly::Polyhedron  *b, carve::csg::CSG::OP op);
+
+void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
+  char                STR[2048];
+
+  if( (nrhs != 3) || ( !mxIsStruct(prhs[0]) ) || ( !mxIsStruct(prhs[1]) ) || ( !mxIsChar(prhs[2]) ))
+  {
+	  /*Help Example	*/
+	  mexPrintf("carveIntersect( IN_MESH1, IN_MESH2, OPERATION)\n");
+	  mexPrintf("\n");
+	  mexPrintf("OPERATION\t, string       ... Specify boolean operation ==\n");
+	  mexPrintf("\t\t{'u','union','+'}, \n"
+			  "\t\t{'i','int','intersect','intersection'},  \n"
+			  "\t\t{'sd','symdiff','symmetricdifference'},  \n"
+			  "\t\t{'minus','-','a_minus_b'},  \n"
+			  "\t\t{'b_minus_a'}\n\n");
+	  mexPrintf("\n");
+
+	  if(( !mxIsStruct(prhs[0]) ) || ( !mxIsStruct(prhs[1]) ))
+	  {
+		  mexPrintf("MESH Data have to be both Matlab structure types.\n");
+	  }
+	  if( nlhs ){ for (int i=0; i<nlhs; i++) plhs[i]=mxCreateDoubleMatrix( 0 , 0 , mxREAL ); }
+	  mexErrMsgTxt("\n");
+	  //return;
+  }
+  
+  ALLOCATES();
+  carve::poly::Polyhedron *MESH1;
+  carve::poly::Polyhedron *MESH2;
+  carve::poly::Polyhedron *MESH_OUT;
+  carve::csg::CSG::OP Op;
+
+  MESH1 = MESH2carvePolyhedron( prhs[0] );
+  MESH2 = MESH2carvePolyhedron( prhs[1] );
+
+  //Operacion
+  mxGetString( prhs[2], STR, 2047 );
+  CallMethod( &Op , STR );
+
+  //Intersection
+  //MESH_OUT = compute_direct(MESH1,MESH2,carve::csg::CSG::A_MINUS_B);
+  MESH_OUT = compute_by_pipeline(MESH1,MESH2, Op);
+
+  plhs[0]= carvePolyhedron2MESH( MESH_OUT );
+
+  EXIT:
+    free(MESH1);
+    free(MESH2);
+    myFreeALLOCATES();
+}
+
+carve::poly::Polyhedron *compute_direct( carve::poly::Polyhedron  *a, carve::poly::Polyhedron  *b, carve::csg::CSG::OP op)
+{
+	carve::csg::CSG myCSG;
+
+	myCSG.hooks.registerHook(new carve::csg::CarveTriangulator, carve::csg::CSG::Hooks::PROCESS_OUTPUT_FACE_BIT);
+
+
+	//Interseccion
+	return myCSG.compute(a, b, carve::csg::CSG::A_MINUS_B);
+}
+carve::poly::Polyhedron *compute_by_pipeline( carve::poly::Polyhedron  *a, carve::poly::Polyhedron  *b, carve::csg::CSG::OP op)
+{
+	carve::poly::Polyhedron  *result;
+	carve::csg::CSG myCSG;
+	carve::csg::CSG_TreeNode *lhs;
+	carve::csg::CSG_TreeNode *rhs;
+	carve::csg::CSG_TreeNode *TREE;
+
+	lhs = new carve::csg::CSG_PolyNode(a, true);
+	rhs = new carve::csg::CSG_PolyNode(b, true);
+
+	TREE = new carve::csg::CSG_OPNode(lhs, rhs,
+			op,
+			true,
+			carve::csg::CSG::CLASSIFY_EDGE);
+
+	myCSG.hooks.registerHook(new carve::csg::CarveTriangulator, carve::csg::CSG::Hooks::PROCESS_OUTPUT_FACE_BIT);
+
+
+	//Interseccion
+	result = TREE->eval(myCSG);
+
+	free(lhs);
+	free(rhs);
+
+	return result;
+}
+
+void CallMethod( carveOBJ_TYPE *O , char *met )
+{
+  Call_UNION( "u", "union", "+" );
+  Call_INTERSECTION( "i", "int", "intersect", "intersection" );
+  Call_SYMM_DIFF( "sd", "symdiff", "symmetricdifference" );
+  Call_A_MINUS_B( "minus" , "-", "a_minus_b" );
+  Call_B_MINUS_A( "b_minus_a" );
+
+  mexWarnMsgTxt("Invalid Method: "); mexPrintf(" %s\n", met ); myFlush();
+}

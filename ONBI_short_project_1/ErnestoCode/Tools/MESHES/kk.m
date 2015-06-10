@@ -1,0 +1,18 @@
+clear all;
+close all;
+load cilinders;
+M=vtkPolyDataNormals(M,'ComputePointNormalsOff', [], 'ComputeCellNormalsOn'     , [], 'ConsistencyOn'            , []);
+N=vtkPolyDataNormals(N,'ComputePointNormalsOff', [], 'ComputeCellNormalsOn'     , [], 'ConsistencyOn'            , []);
+[A,B,C,D]=IntersectMesh3(M,N);
+A.triNormals=cross(A.xyz(A.tri(:,2),:)-A.xyz(A.tri(:,1),:),A.xyz(A.tri(:,3),:)-A.xyz(A.tri(:,1),:),2);
+A.triNormals=bsxfun(@rdivide,A.triNormals,sqrt(sum(A.triNormals.^2,2)));
+figure,plotMESH(A,'TD',A.triNormals);
+B.triNormals=cross(B.xyz(B.tri(:,2),:)-B.xyz(B.tri(:,1),:),B.xyz(B.tri(:,3),:)-B.xyz(B.tri(:,1),:),2);
+B.triNormals=bsxfun(@rdivide,B.triNormals,sqrt(sum(B.triNormals.^2,2)));
+figure,plotMESH(B,'TD',B.triNormals);
+C.triNormals=cross(C.xyz(C.tri(:,2),:)-C.xyz(C.tri(:,1),:),C.xyz(C.tri(:,3),:)-C.xyz(C.tri(:,1),:),2);
+C.triNormals=bsxfun(@rdivide,C.triNormals,sqrt(sum(C.triNormals.^2,2)));
+figure,plotMESH(C,'TD',C.triNormals);
+D.triNormals=cross(D.xyz(D.tri(:,2),:)-D.xyz(D.tri(:,1),:),D.xyz(D.tri(:,3),:)-D.xyz(D.tri(:,1),:),2);
+D.triNormals=bsxfun(@rdivide,D.triNormals,sqrt(sum(D.triNormals.^2,2)));
+figure,plotMESH(D,'TD',D.triNormals);

@@ -11,17 +11,28 @@ clear all
 close all
 clc
 
-setenv('path',[getenv('path'),';','C:\Users\jesu2687\Documents\MATLAB\ErnestoCode\Tools\MESHES\vtk_libs']);
-addpath('C:\Users\jesu2687\Documents\MATLAB\ONBI_short_project_1')
-addpath C:\Users\jesu2687\Documents\MATLAB\ErnestoCode\Tools\MESHES\
-addpath C:\Users\jesu2687\Documents\MATLAB\ErnestoCode\Tools
-addpath C:\Users\jesu2687\Documents\MATLAB\ErnestoCode\
-addpath C:\Users\jesu2687\Documents\MATLAB\output-stacom-newcase\output-stacom-newcase
-addpath C:\Users\jesu2687\Documents\MATLAB\closestPoint
+% %for office computer use
+% setenv('path',[getenv('path'),';','C:\Users\jesu2687\Documents\MATLAB\ErnestoCode\Tools\MESHES\vtk_libs']);
+% addpath('C:\Users\jesu2687\Documents\MATLAB\ONBI_short_project_1')
+% addpath C:\Users\jesu2687\Documents\MATLAB\ErnestoCode\Tools\MESHES\
+% addpath C:\Users\jesu2687\Documents\MATLAB\ErnestoCode\Tools
+% addpath C:\Users\jesu2687\Documents\MATLAB\ErnestoCode\
+% addpath C:\Users\jesu2687\Documents\MATLAB\output-stacom-newcase\output-stacom-newcase
+% addpath C:\Users\jesu2687\Documents\MATLAB\closestPoint
+% load('C:\Users\jesu2687\Documents\MATLAB\ONBI_short_project_1\project1_data.mat');
+% load('C:\Users\jesu2687\Documents\MATLAB\ONBI_short_project_1\labels.mat');
 
+%for personal laptop use
+setenv('path',[getenv('path'),';','C:\Users\jack laptop\Documents\MATLAB\ErnestoCode\Tools\MESHES\vtk_libs']);
+addpath('C:\Users\jack laptop\Documents\MATLAB\ONBI_short_project_1')
+addpath 'C:\Users\jack laptop\Documents\MATLAB\ErnestoCode\Tools\MESHES\'
+addpath 'C:\Users\jack laptop\Documents\MATLAB\ErnestoCode\Tools'
+addpath 'C:\Users\jack laptop\Documents\MATLAB\ErnestoCode\'
+addpath 'C:\Users\jack laptop\Documents\MATLAB\output-stacom-newcase\output-stacom-newcase'
+addpath 'C:\Users\jack laptop\Documents\MATLAB\closestPoint'
+load('C:\Users\jack laptop\Documents\MATLAB\ONBI_short_project_1\project1_data.mat');
+load('C:\Users\jack laptop\Documents\MATLAB\ONBI_short_project_1\labels.mat');
 
-load('C:\Users\jesu2687\Documents\MATLAB\ONBI_short_project_1\project1_data.mat');
-load('C:\Users\jesu2687\Documents\MATLAB\ONBI_short_project_1\labels.mat');
 
 %store indices that allow us to indentify which study (DETERMINE or MESA)
 %each case belongs to.
@@ -167,7 +178,7 @@ xlabel 'sys dEPI2ENDO standard deviations'
 disp('calculating myocardium volumes')
 
 %load struct containing the triangle file for the myo 'donut' shaped lid
-load('C:\Users\jesu2687\Documents\MATLAB\ONBI_short_project_1\myoB_tri.mat')
+load('C:\Users\jack laptop\Documents\MATLAB\ONBI_short_project_1\myoB_tri.mat')
 
 %% make myo shapes (using calculate myocardium volumes function)
  [data] = calcMyoVolume(data, myoB);
