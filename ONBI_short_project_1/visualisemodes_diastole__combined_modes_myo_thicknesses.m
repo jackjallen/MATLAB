@@ -2,9 +2,9 @@
 subplot 331
 factor1 = -nStd;
 factor2 = nStd;
-dia_sys_myo_new_shape_minus_plus(:,visualisingMode1) = dia_sys_myo_mean(:) + principle_dia_sys_myo_eigenvectors(:,visualisingMode1)*(factor1)*dia_sys_myo_max_b(visualisingMode1,1) + ...
-principle_dia_sys_myo_eigenvectors(:,visualisingMode2)*(factor2)*dia_sys_myo_max_b(visualisingMode2,1) ;
-shape = reshape(dia_sys_myo_new_shape_minus_plus(:,visualisingMode1),[4356 3]);
+dia_sys_dEPI2ENDOs_new_shape_minus_plus(:,visualisingMode1) = dia_sys_dEPI2ENDOs_mean(:) + principle_dia_sys_dEPI2ENDOs_eigenvectors(:,visualisingMode1)*(factor1)*dia_sys_dEPI2ENDOs_max_b(visualisingMode1,1) + ...
+principle_dia_sys_dEPI2ENDOs_eigenvectors(:,visualisingMode2)*(factor2)*dia_sys_dEPI2ENDOs_max_b(visualisingMode2,1) ;
+shape = reshape(dia_sys_dEPI2ENDOs_new_shape_minus_plus(:,visualisingMode1),[4356 3]);
 shape = shape(1:2178,:);
 patch('vertices', shape, 'faces', data(1).diastolic.full.tri, 'facecolor', 'r', 'facealpha', '0.4', 'edgecolor', 'none','FaceLighting','gouraud', 'clipping','off')
 camlight('right')
@@ -17,9 +17,9 @@ axis ([x(1) x(2) y(1) y(2) z(1) z(2)])
 subplot 333
 factor1 = nStd;
 factor2 = nStd;
-dia_sys_myo_new_shape_plus_plus(:,visualisingMode1) = dia_sys_myo_mean(:) + principle_dia_sys_myo_eigenvectors(:,visualisingMode1)*(factor1)*dia_sys_myo_max_b(visualisingMode1,1) + ...
-principle_dia_sys_myo_eigenvectors(:,visualisingMode2)*(factor2)*dia_sys_myo_max_b(visualisingMode2,1) ;
-shape = reshape(dia_sys_myo_new_shape_plus_plus(:,visualisingMode1), [2*2178 , 3]);
+dia_sys_dEPI2ENDOs_new_shape_plus_plus(:,visualisingMode1) = dia_sys_dEPI2ENDOs_mean(:) + principle_dia_sys_dEPI2ENDOs_eigenvectors(:,visualisingMode1)*(factor1)*dia_sys_dEPI2ENDOs_max_b(visualisingMode1,1) + ...
+principle_dia_sys_dEPI2ENDOs_eigenvectors(:,visualisingMode2)*(factor2)*dia_sys_myo_max_b(visualisingMode2,1) ;
+shape = reshape(dia_sys_dEPI2ENDOs_new_shape_plus_plus(:,visualisingMode1), [2*2178 , 3]);
 shape = shape(1:2178,:);
 %
 %         x = [-70 ; 40];
@@ -39,9 +39,9 @@ axis ([x(1) x(2) y(1) y(2) z(1) z(2)])
 subplot 337
 factor1 = -nStd;
 factor2 = -nStd;
-dia_sys_myo_new_shape_minus_minus(:,visualisingMode1) = dia_sys_myo_mean(:) + principle_dia_sys_myo_eigenvectors(:,visualisingMode1)*(factor1)*dia_sys_myo_max_b(visualisingMode1,1) + ...
-principle_dia_sys_myo_eigenvectors(:,visualisingMode2)*(factor2)*dia_sys_myo_max_b(visualisingMode2,1) ;
-shape = reshape(dia_sys_myo_new_shape_minus_minus(:,visualisingMode1), [2*2178 , 3]);
+dia_sys_dEPI2ENDOs_new_shape_minus_minus(:,visualisingMode1) = dia_sys_dEPI2ENDOs_mean(:) + principle_dia_sys_dEPI2ENDOs_eigenvectors(:,visualisingMode1)*(factor1)*dia_sys_dEPI2ENDOs_max_b(visualisingMode1,1) + ...
+principle_dia_sys_dEPI2ENDOs_eigenvectors(:,visualisingMode2)*(factor2)*dia_sys_dEPI2ENDOs_max_b(visualisingMode2,1) ;
+shape = reshape(dia_sys_dEPI2ENDOs_new_shape_minus_minus(:,visualisingMode1), [2*2178 , 3]);
 shape = shape(1:2178,:);
 %         x = [-70 ; 40];
 %         y = [-65 ; 35];
@@ -58,9 +58,9 @@ axis ([x(1) x(2) y(1) y(2) z(1) z(2)])
 subplot 339
 factor1 = nStd;
 factor2 = -nStd;
-dia_sys_myo_new_shape_plus_minus(:,visualisingMode1) = dia_sys_myo_mean(:) + principle_dia_sys_myo_eigenvectors(:,visualisingMode1)*(factor1)*dia_sys_myo_max_b(visualisingMode1,1) + ...
-principle_dia_sys_myo_eigenvectors(:,visualisingMode2)*(factor2)*dia_sys_myo_max_b(visualisingMode2,1) ;
-shape = reshape(dia_sys_myo_new_shape_plus_minus(:,visualisingMode1), [2*2178 , 3]);
+dia_sys_dEPI2ENDOs_new_shape_plus_minus(:,visualisingMode1) = dia_sys_dEPI2ENDOs_mean(:) + principle_dia_sys_dEPI2ENDOs_eigenvectors(:,visualisingMode1)*(factor1)*dia_sys_dEPI2ENDOs_max_b(visualisingMode1,1) + ...
+principle_dia_sys_dEPI2ENDOs_eigenvectors(:,visualisingMode2)*(factor2)*dia_sys_dEPI2ENDOs_max_b(visualisingMode2,1) ;
+shape = reshape(dia_sys_dEPI2ENDOs_new_shape_plus_minus(:,visualisingMode1), [2*2178 , 3]);
 shape = shape(1:2178,:);
 %         x = [-70 ; 40];
 %         y = [-65 ; 35];

@@ -1,5 +1,4 @@
-
-%%
+%% make Meridians
 %Ernesto's code
 
 epi = shape(1090:end,:) ; 
@@ -57,65 +56,3 @@ for m = 1:numel( rings{2} )
   
  
 end
-%%
-
-
-%%
-ENDO.xyz = endo;
-ENDO.tri = EPI.tri;
-ENDO = TidyMesh(ENDO)
-% ENDO = data(1).diastolic.endo
-[~,~,dEPI2ENDO] = vtkClosestElement( ENDO , EPI.xyz )
-% [~,~,dia_dENDO2EPI] = vtkClosestElement( EPI , ENDO.xyz )
-
-% figure; subplot 121
-% hold on
-% patch('vertices',EPI.xyz, 'faces', EPI.tri,'facecolor','interp','cdata',dEPI2ENDO)
-% % patch('vertices',ENDO.xyz, 'faces', ENDO.tri,'facecolor','interp','cdata',dia_dENDO2EPI)
-% view(3)
-
-
-% for m = 1:32
-%     m
-% plot3D(EPI.xyz(meridian(m,:),:),'-o','markersize',10)
-% pause
-% end
-
-%%
-R     = linspace( 0 , 1    , size( meridian , 2 )   );
-THETA = linspace( 0 , 2*pi , size( meridian , 1 )+1 );
-X     = bsxfun( @times , R , cos(THETA).' );
-Y     = bsxfun( @times , R , sin(THETA).' );
-
-v = dEPI2ENDO(meridian);
-
-% normaliseddEPI2ENDO = dEPI2ENDO/max(max(v([1:end 1],:)));
-% v = normaliseddEPI2ENDO( meridian );
-
-% figure
-% subplot 121
-% patch('vertices',EPI.xyz, 'faces', EPI.tri,'facecolor','interp','cdata',normaliseddEPI2ENDO)
-% view(3)
-% axis equal
-% cmin = min(min(normaliseddEPI2ENDO([1:end 1],:)));
-% cmax = max(max(normaliseddEPI2ENDO([1:end 1],:)));
-% caxis ([ cmin cmax])
-% title 'mean diastole shape for all training shapes'
-% xlabel 'x'
-% ylabel 'y'
-% zlabel 'z'
-% subplot 122
-surf( X , Y , v([1:end 1],:) ,'facecolor','interp'); view(2)
-axis ([-1 1 -1 1])
-% cmin = min(min(v([1:end 1],:)));
-% cmax = max(max(v([1:end 1],:)));
-max_v(1) = max(max(v))
-min_v(1) = min(min(v))
-% cmin = min_v(1)
-% cmax = max_v(1)
-caxis ([cmin cmax]);
-c = colorbar;
-
-% c.Label.String = 'normalised thickness';
-
-

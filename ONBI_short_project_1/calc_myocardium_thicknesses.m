@@ -13,10 +13,10 @@ for i = 1:401
     dia_dEPI2ENDOs(i,:) = data(i).dia_dEPI2ENDO;
     sys_dEPI2ENDOs(i,:) = data(i).sys_dEPI2ENDO;
  
-    data(i).dia_dEPI2ENDO_vars = var(data(i).dia_dEPI2ENDO);
-    data(i).sys_dEPI2ENDO_vars = var(data(i).sys_dEPI2ENDO);
+    data(i).dia_dEPI2ENDO_vars = var(data(i).dia_dEPI2ENDO(:));
+    data(i).sys_dEPI2ENDO_vars = var(data(i).sys_dEPI2ENDO(:));
     
-    data(i).dia_sys_dEPI2ENDO_vars = var([data(i).dia_dEPI2ENDO ; data(i).sys_dEPI2ENDO ])
+    data(i).dia_sys_dEPI2ENDO_vars = var([data(i).dia_dEPI2ENDO(:) ; data(i).sys_dEPI2ENDO(:) ]);
     
     data(i).dia_dEPI2ENDO_stds = sqrt(data(i).dia_dEPI2ENDO_vars);
     data(i).sys_dEPI2ENDO_stds = sqrt(data(i).sys_dEPI2ENDO_vars);
@@ -34,6 +34,8 @@ for i = 1:401
     
     deltaMeanT(i) = mean(data(i).sys_dEPI2ENDO) - mean(data(i).dia_dEPI2ENDO);
     
+     MyoThicknessSysDiaRatioVar(i) = var((data(i).sys_dEPI2ENDO)./(data(i).dia_dEPI2ENDO));
+    MyoThicknessSysDiaRatio(i) = (sum(data(i).sys_dEPI2ENDO)/sum(data(i).dia_dEPI2ENDO));
 end
 
 DETERMINEmeanDiaEndo = mean(diastolicEndos(data(1).DETERMINE_indices,:),1);
@@ -50,16 +52,16 @@ MESAmeanSysEndo = mean(systolicEndos(data(1).MESA_indices,:),1);
 MESAmeanSysEpi = mean(systolicEpis(data(1).MESA_indices,:),1);
 MESAmeanSysT = mean(sys_dEPI2ENDOs(data(1).MESA_indices,:),1);
 
-DETERMINEdiaMyoThicknessVariance = cell2mat({data(data(1).DETERMINE_indices(:)).dia_dEPI2ENDO_vars}) ;
+DETERMINEdiaMyoThicknessVariance = cell2mat({data(data(1).DETERMINE_indices).dia_dEPI2ENDO_vars}) ;
 MESAdiaMyoThicknessVariance = cell2mat({data(data(1).MESA_indices).dia_dEPI2ENDO_vars});
 DETERMINEsysMyoThicknessVariance = cell2mat({data(data(1).DETERMINE_indices).sys_dEPI2ENDO_vars});
 MESAsysMyoThicknessVariance = cell2mat({data(data(1).MESA_indices).sys_dEPI2ENDO_vars});
 
-DETERMINEmyoTchangesVar = var(cell2mat({data(data(1).DETERMINE_indices).myo_T_changes}))
-MESAmyoTchangesVar = var(cell2mat({data(data(1).MESA_indices).myo_T_changes}))
+DETERMINEmyoTchangesVar = var(cell2mat({data(data(1).DETERMINE_indices).myo_T_changes}));
+MESAmyoTchangesVar = var(cell2mat({data(data(1).MESA_indices).myo_T_changes}));
 
-DETERMINEdeltaMeanT = deltaMeanT(data(1).DETERMINE_indices)
-MESAdeltaMeanT = deltaMeanT(data(1).MESA_indices)
+DETERMINEdeltaMeanT = deltaMeanT(data(1).DETERMINE_indices);
+MESAdeltaMeanT = deltaMeanT(data(1).MESA_indices);
 
-DETERMINE_DiaSys_dEPI2ENDO_vars = cell2mat({data(data(1).DETERMINE_indices).dia_sys_dEPI2ENDO_vars})
-MESA_DiaSys_dEPI2ENDO_vars = cell2mat({data(data(1).MESA_indices).dia_sys_dEPI2ENDO_vars})
+DETERMINE_DiaSys_dEPI2ENDO_vars = cell2mat({data(data(1).DETERMINE_indices).dia_sys_dEPI2ENDO_vars});
+MESA_DiaSys_dEPI2ENDO_vars = cell2mat({data(data(1).MESA_indices).dia_sys_dEPI2ENDO_vars});

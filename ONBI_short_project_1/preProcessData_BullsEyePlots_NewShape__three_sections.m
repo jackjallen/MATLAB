@@ -1,5 +1,4 @@
 
-%%
 %Ernesto's code
 
 epi = shape(1090:end,:) ; 
@@ -59,7 +58,6 @@ for m = 1:numel( rings{2} )
 end
 %%
 
-
 %%
 ENDO.xyz = endo;
 ENDO.tri = EPI.tri;
@@ -89,6 +87,14 @@ Y     = bsxfun( @times , R , sin(THETA).' );
 
 v = dEPI2ENDO(meridian);
 
+sectionA_meridian =  meridian(:,1:11);
+sectionB_meridian =  meridian(:,12:22);
+sectionC_meridian =  meridian(:,23:33);
+
+vA = dEPI2ENDO(sectionA_meridian);
+vB = dEPI2ENDO(sectionB_meridian);
+vC = dEPI2ENDO(sectionC_meridian);
+
 % normaliseddEPI2ENDO = dEPI2ENDO/max(max(v([1:end 1],:)));
 % v = normaliseddEPI2ENDO( meridian );
 
@@ -105,17 +111,51 @@ v = dEPI2ENDO(meridian);
 % ylabel 'y'
 % zlabel 'z'
 % subplot 122
-surf( X , Y , v([1:end 1],:) ,'facecolor','interp'); view(2)
+
+hold on
+surf( X(:,12:22) , Y(:,12:22) , vB([1:end 1],:) ,'facecolor','interp','edgecolor','none'); view(2)
+surf( X(:,23:33) , Y(:,23:33) , vC([1:end 1],:) ,'facecolor','interp','edgecolor','none'); view(2)
+surf( X(:,1:11) , Y(:,1:11) , vA([1:end 1],:) ,'facecolor','interp','edgecolor','none'); view(2)
+
 axis ([-1 1 -1 1])
 % cmin = min(min(v([1:end 1],:)));
 % cmax = max(max(v([1:end 1],:)));
-max_v(1) = max(max(v))
-min_v(1) = min(min(v))
-% cmin = min_v(1)
-% cmax = max_v(1)
 caxis ([cmin cmax]);
+title 'myocardium thickness'
 c = colorbar;
-
 % c.Label.String = 'normalised thickness';
 
+for i = 1:401
+    
+data(i).dia_vA = data(i).dia_dEPI2ENDO(sectionA_meridian);
+data(i).dia_vB = data(i).dia_dEPI2ENDO(sectionB_meridian);
+data(i).dia_vC = data(i).dia_dEPI2ENDO(sectionC_meridian);
 
+data(i).sys_vA = data(i).sys_dEPI2ENDO(sectionA_meridian);
+data(i).sys_vB = data(i).sys_dEPI2ENDO(sectionB_meridian);
+data(i).sys_vC = data(i).sys_dEPI2ENDO(sectionC_meridian);  
+    
+data(i).dia_sys_vA = [ data(i).dia_dEPI2ENDO(sectionA_meridian); data(i).sys_dEPI2ENDO(sectionA_meridian)];
+data(i).dia_sys_vB = [ data(i).dia_dEPI2ENDO(sectionB_meridian); data(i).sys_dEPI2ENDO(sectionB_meridian)];
+data(i).dia_sys_vC = [ data(i).dia_dEPI2ENDO(sectionC_meridian); data(i).sys_dEPI2ENDO(sectionC_meridian)];
+
+data(i).dia_vA_var = var(data(i).dia_vA(:));
+data(i).dia_vB_var = var(data(i).dia_vB(:));
+data(i).dia_vC_var = var(data(i).dia_vC(:));
+data(i).sys_vA_var = var(data(i).sys_vA(:));
+data(i).sys_vB_var = var(data(i).sys_vB(:));
+data(i).sys_vC_var = var(data(i).sys_vC(:));
+data(i).dia_sys_vA_var = var(data(i).dia_sys_vA(:))
+data(i).dia_sys_vB_var = var(data(i).dia_sys_vB(:))
+data(i).dia_sys_vC_var = var(data(i).dia_sys_vC(:))
+
+data(i).dia_vA_mean = mean(data(i).dia_vA(:));
+data(i).dia_vB_mean = mean(data(i).dia_vB(:));
+data(i).dia_vC_mean = mean(data(i).dia_vC(:));
+data(i).sys_vA_mean = mean(data(i).sys_vA(:));
+data(i).sys_vB_mean = mean(data(i).sys_vB(:));
+data(i).sys_vC_mean = mean(data(i).sys_vC(:));
+data(i).dia_sys_vA_mean = mean(data(i).dia_sys_vA(:))
+data(i).dia_sys_vB_mean = mean(data(i).dia_sys_vB(:))
+data(i).dia_sys_vC_mean = mean(data(i).dia_sys_vC(:))
+end

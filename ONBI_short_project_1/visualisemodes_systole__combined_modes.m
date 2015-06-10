@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 subplot 331
-factor1 = -c;
-factor2 = c;
+factor1 = -nStd;
+factor2 = nStd;
 dia_sys_myo_new_shape_minus_plus(:,visualisingMode1) = dia_sys_myo_mean(:) + principle_dia_sys_myo_eigenvectors(:,visualisingMode1)*(factor1)*dia_sys_myo_max_b(visualisingMode1,1) + ...
 principle_dia_sys_myo_eigenvectors(:,visualisingMode2)*(factor2)*dia_sys_myo_max_b(visualisingMode2,1) ;
 shape = reshape(dia_sys_myo_new_shape_minus_plus(:,visualisingMode1),[4356 3]);
@@ -15,8 +15,8 @@ axis ([x(1) x(2) y(1) y(2) z(1) z(2)])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 subplot 333
-factor1 = c;
-factor2 = c;
+factor1 = nStd;
+factor2 = nStd;
 dia_sys_myo_new_shape_plus_plus(:,visualisingMode1) = dia_sys_myo_mean(:) + principle_dia_sys_myo_eigenvectors(:,visualisingMode1)*(factor1)*dia_sys_myo_max_b(visualisingMode1,1) + ...
 principle_dia_sys_myo_eigenvectors(:,visualisingMode2)*(factor2)*dia_sys_myo_max_b(visualisingMode2,1) ;
 shape = reshape(dia_sys_myo_new_shape_plus_plus(:,visualisingMode1), [2*2178 , 3]);
@@ -37,8 +37,8 @@ axis ([x(1) x(2) y(1) y(2) z(1) z(2)])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 subplot 337
-factor1 = -c;
-factor2 = -c;
+factor1 = -nStd;
+factor2 = -nStd;
 dia_sys_myo_new_shape_minus_minus(:,visualisingMode1) = dia_sys_myo_mean(:) + principle_dia_sys_myo_eigenvectors(:,visualisingMode1)*(factor1)*dia_sys_myo_max_b(visualisingMode1,1) + ...
 principle_dia_sys_myo_eigenvectors(:,visualisingMode2)*(factor2)*dia_sys_myo_max_b(visualisingMode2,1) ;
 shape = reshape(dia_sys_myo_new_shape_minus_minus(:,visualisingMode1), [2*2178 , 3]);
@@ -56,8 +56,8 @@ axis ([x(1) x(2) y(1) y(2) z(1) z(2)])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 subplot 339
-factor1 = c;
-factor2 = -c;
+factor1 = nStd;
+factor2 = -nStd;
 dia_sys_myo_new_shape_plus_minus(:,visualisingMode1) = dia_sys_myo_mean(:) + principle_dia_sys_myo_eigenvectors(:,visualisingMode1)*(factor1)*dia_sys_myo_max_b(visualisingMode1,1) + ...
 principle_dia_sys_myo_eigenvectors(:,visualisingMode2)*(factor2)*dia_sys_myo_max_b(visualisingMode2,1) ;
 shape = reshape(dia_sys_myo_new_shape_plus_minus(:,visualisingMode1), [2*2178 , 3]);

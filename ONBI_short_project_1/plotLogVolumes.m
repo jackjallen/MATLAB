@@ -33,12 +33,12 @@ MESA_sys_epi_volumes( :,all(~MESA_sys_epi_volumes,1) ) = [];
 
 
 
-figure
+figure ('name','log volumes')
 subplot 221
 hold on
 nbins = 25;
-histogram(DETERMINE_dia_endo_volumes*0.001,nbins)
-histogram(MESA_dia_endo_volumes*0.001,nbins)
+histogram(log(DETERMINE_dia_endo_volumes*0.001),nbins)
+histogram(log(MESA_dia_endo_volumes*0.001),nbins)
 legend 'DETERMINE' ' MESA'
 title 'diastolic endocardium volumes'
 xlabel 'endocardium volume (ml)'
@@ -50,8 +50,8 @@ ylabel 'frequency'
 subplot 222
 hold on
 nbins = 25;
-histogram(DETERMINE_sys_endo_volumes*0.001,nbins)
-histogram(MESA_sys_endo_volumes*0.001,nbins)
+histogram(log(DETERMINE_sys_endo_volumes*0.001),nbins)
+histogram(log(MESA_sys_endo_volumes*0.001),nbins)
 legend 'DETERMINE' ' MESA'
 title 'systolic endocardium volumes'
 xlabel 'endocardium volume (ml)'
@@ -64,8 +64,8 @@ ylabel 'frequency'
 subplot 223
 hold on
 nbins = 25;
-histogram(DETERMINE_dia_epi_volumes*0.001,nbins)
-histogram(MESA_dia_epi_volumes*0.001,nbins)
+histogram(log(DETERMINE_dia_epi_volumes*0.001),nbins)
+histogram(log(MESA_dia_epi_volumes*0.001),nbins)
 legend 'DETERMINE' ' MESA'
 title 'diastolic epicardium volumes'
 xlabel 'endocardium volume (ml)'
@@ -74,8 +74,8 @@ ylabel 'frequency'
 subplot 224
 hold on
 nbins = 25;
-histogram(DETERMINE_sys_epi_volumes*0.001,nbins)
-histogram(MESA_sys_epi_volumes*0.001,nbins)
+histogram(log(DETERMINE_sys_epi_volumes*0.001),nbins)
+histogram(log(MESA_sys_epi_volumes*0.001),nbins)
 legend 'DETERMINE' ' MESA'
 title 'systolic epicardium volumes'
 xlabel 'endocardium volume (ml)'

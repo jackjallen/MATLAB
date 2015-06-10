@@ -11,14 +11,14 @@ function [v,c] = MeshVolume( M , varargin )
   if CLEAN
      
     M = (vtkCleanPolyData( M , 'SetAbsoluteTolerance',1e-5,'SetToleranceIsAbsolute',true,'SetPointMerging',true ,'SetConvertPolysToLines',true, 'SetConvertLinesToPoints',true ));
-    M.tri( any( M.tri == 0 , 2) , : ) = [];
+     M.tri( any( M.tri == 0 , 2) , : ) = [];
     B = vtkFeatureEdges( M , 'BoundaryEdgesOn',[],'FeatureEdgesOff',[],'NonManifoldEdgesOff',[],'ManifoldEdgesOff',[]);
     if isfield( B , 'xyz' )
       warning('MESH look open. try with vtkFillHolesFilter');
     end
   end
   
-  M.tri( any( ~M.tri , 2 ) , : ) = [];
+   M.tri( any( ~M.tri , 2 ) , : ) = [];
 
   N = cross( ( M.xyz(M.tri(:,2),:) - M.xyz(M.tri(:,1),:) ) , ( M.xyz(M.tri(:,3),:) - M.xyz(M.tri(:,2),:) ) , 2 );
 
